@@ -34,12 +34,14 @@ int main(int argc, char** argv)
     // A* a0 = new A();
     // A* a1 = new A();
     // A* a2 = new A();
+    // utd::triangle();
     //Triangle();
+
     Untile app(utd::cmdline_args{argc, argv});
-    // utd::application app1(utd::cmdline_args{argc, argv});
+    // // utd::application app1(utd::cmdline_args{argc, argv});
     
     Untile::instance().run();
-
+    
     // // utd::application app1(utd::cmdline_args{argc, argv});
     // app.run();
 

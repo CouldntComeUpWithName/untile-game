@@ -71,12 +71,12 @@ utd::time& utd::operator%=(time& lhs, utd::time::nanoseconds_t value)
 
 utd::time& utd::operator*=(time& lhs, float value) noexcept
 {
-	lhs.m_time *= value;
+	lhs.m_time = static_cast<time::nanoseconds_t>(lhs.m_time * value);
 	return lhs;
 }
 
 utd::time& utd::operator/=(time& lhs, float value)
 {
-	lhs.m_time /= value;
+	lhs.m_time = static_cast<time::nanoseconds_t>(lhs.m_time / value);
 	return lhs;
 }

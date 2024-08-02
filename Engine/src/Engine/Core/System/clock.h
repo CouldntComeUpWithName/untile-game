@@ -29,6 +29,4 @@ namespace utd
     private:
     };
 
-    using infinite_clock = const clock;
-
 } /* namespace utd */

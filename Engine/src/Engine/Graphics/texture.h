@@ -15,7 +15,7 @@ namespace utd
         RGBA32F
     };
 
-    class texture
+    class texture : noncopyable
     {
         using id = u32;
     public:
@@ -39,10 +39,12 @@ namespace utd
 
         virtual void set_data(u32 slot = 0) = 0;
         virtual bool is_loaded() const = 0;
-        inline id get_id() { return m_id; }
+        inline id get_id() const { return m_id; }
         virtual bool operator==(const texture& other) const = 0;
     public:
         static std::uptr<texture> load(const std::string& filepath);
+    private:
+        // virtual void release() = 0;
     protected:
         id m_id;
     };

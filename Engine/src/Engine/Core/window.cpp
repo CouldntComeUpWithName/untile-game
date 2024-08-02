@@ -4,7 +4,7 @@
 #include "log.h"
 #include "upch.h"
 
-#include "../Platform/glfw_window.h"
+#include "Engine/Platform/glfw_window.h"
 // Dear ImGui: standalone example application for GLFW + OpenGL 3, using programmable pipeline
 // (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
 
@@ -247,9 +247,7 @@ void Triangle()
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-#ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
+
 
         // glfw window creation
         // --------------------
@@ -314,9 +312,9 @@ void Triangle()
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         float vertices[] = {
-            -0.5f, -0.5f, 0.0f, // left  
-             0.5f, -0.5f, 0.0f, // right 
-             0.0f,  0.5f, 0.0f  // top   
+            -0.5f, 0.5f, 0.0f, // left  
+             0.5f, 0.5f, 0.0f, // right 
+             0.0f,  -0.5f, 0.0f  // top   
         };
 
         unsigned int VBO, VAO;

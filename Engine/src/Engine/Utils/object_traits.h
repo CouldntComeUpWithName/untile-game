@@ -16,17 +16,19 @@ namespace utd
     template<typename T>
     class singleton : protected noncopyable
     {
-        // friend T;
+        friend T;
     public:
-        static bool exists() { return m_instance; }
-        static T& instance() { return *m_instance; }
+        static bool exists() { return s_instance; }
+        static T& instance() { return *s_instance; }
 
     protected:
-        static void init(T* other) { m_instance = other; }
-        static void destroy() { m_instance = nullptr; }
+        static void init(T* other) { s_instance = other; }
+        static void destroy() { s_instance = nullptr; }
     
     private:
-        static inline T* m_instance = nullptr;
+        singleton() = default;
+    private:
+        static inline T* s_instance = nullptr;
     };
 
     /// @brief "utility objects" have no state, provide no interface, and hold only static methods or data

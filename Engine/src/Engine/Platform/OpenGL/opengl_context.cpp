@@ -9,7 +9,6 @@
 
 void utd::opengl_context::init(void* window_handle)
 {
-    
     glfwMakeContextCurrent((GLFWwindow*)window_handle);
     
     auto glad_loader_status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);

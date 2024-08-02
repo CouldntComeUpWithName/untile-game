@@ -76,12 +76,12 @@ namespace utd::literals
 {
 	constexpr utd::time operator""_sec(long double val)noexcept
 	{
-		return utd::time(val * 1000 * 1000 * 1000);
+		return utd::time(static_cast<time::nanoseconds_t>(val * 1000 * 1000 * 1000));
 	}
 
 	constexpr time operator""_sec(u64 val)noexcept
 	{
-		return time(val * 1000 * 1000 * 1000);
+		return time(static_cast<time::nanoseconds_t>(val * 1000 * 1000 * 1000));
 	}
 
 	constexpr time operator""_ms(u64 val)noexcept
@@ -118,12 +118,12 @@ inline constexpr utd::time::time(nanoseconds_t time_point) noexcept
 
 inline constexpr float utd::time::sec() const noexcept
 {
-	return m_time * 0.001f * 0.001f * 0.001f;
+	return static_cast<float>(m_time * 0.001f * 0.001f * 0.001f);
 }
 
 inline constexpr utd::i64 utd::time::ms() const noexcept
 {
-	return m_time * 0.001f * 0.001f;
+	return static_cast<i64>(m_time * 0.001f * 0.001f);
 }
 
 inline constexpr utd::i64 utd::time::ns() const noexcept
@@ -209,12 +209,12 @@ constexpr utd::time utd::operator%(const time lhs, time::nanoseconds_t value)
 
 inline constexpr utd::time utd::operator*(const time lhs, float value) noexcept
 {
-	return time(lhs.m_time * value);
+	return time(static_cast<time::nanoseconds_t>(lhs.m_time * value));
 }
 
 inline constexpr utd::time utd::operator/(const time lhs, float value)
 {
-	return time(lhs.m_time / value);
+	return time(static_cast<time::nanoseconds_t>(lhs.m_time / value));
 }
 
 inline constexpr bool utd::operator<(const time lhs, const time rhs) noexcept

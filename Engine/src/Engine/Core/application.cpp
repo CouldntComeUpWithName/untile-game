@@ -14,8 +14,14 @@
 #include <Engine/Events/application_event.h>
 #include <Engine/Core/System/clock.h>
 
-#include <Engine/Render/Shader.h>
-#include <Engine/Render/Texture.h>
+#include <Engine/Graphics/Renderer.h>
+#include <Engine/Graphics/Shader.h>
+#include <Engine/Graphics/Texture.h>
+
+#include <Engine/Graphics/vertex_array.h>
+#include <Engine/Graphics/index_buffer.h>
+#include <Engine/Graphics/vertex_buffer.h>
+#include <Engine/Graphics/vertex_attrib.h>
 
 utd::application::application(const cmdline_args &)
     : m_running(true)
@@ -27,37 +33,47 @@ utd::application::application(const cmdline_args &)
     m_window->callback([this](event& e){ on_event(e); });
     
     UTD_ENGINE_ASSERT(m_window, "window is null");
-
+    
+    renderer::init();
+    
     m_imgui_layer = new imgui_layer();
     m_layer_stack.push_overlay(m_imgui_layer);
     m_imgui_layer->on_attach();
 
+    demo* dem = new demo();
+    m_layer_stack.push_overlay(dem);
+    dem->on_attach();
+    
+    auto* layer = new triangle_layer();
+    m_layer_stack.push(layer);
+    layer->on_attach();
 
 }
 
 utd::application::~application()
 {
-    singleton::destroy();
+    if(s_instance == this)
+    {    
+        //release resources here
+        singleton::destroy();
+    }
 }
 
 void utd::application::run()
 {
     using namespace utd::literals;
-    utd::clock clock;
+    //
     
-    demo* dem = new demo();
-    m_layer_stack.push_overlay(dem);
 
     // auto triangle_shader = utd::shader::create(vertexShaderSource, fragmentShaderSource);
     // auto triangle_shader = utd::shader::load("E:/Programming/untile/Untile/assets/shaders/triangle.vert", "E:/Programming/untile/Untile/assets/shaders/triangle.frag");
     
-
     float vertices[] = {
-        // positions          // colors           // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+        // positions          // colors                // texture coords
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f, 1.f,    1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f, 1.0f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f  // top left 
     };
     unsigned int indices[] = {
         0, 1, 3, // first triangle
@@ -65,6 +81,19 @@ void utd::application::run()
     };
 
     auto texture_shader = utd::shader::load("E:/Programming/untile/Untile/assets/shaders/texture.vert", "E:/Programming/untile/Untile/assets/shaders/texture.frag");
+
+    vertex_array va;
+    
+    std::uptr<vertex_buffer> vb = std::make_unique<vertex_buffer>(vertices, sizeof(vertices));
+    vb->set_layout
+    ({
+        { shader::data_type::FLOAT3, "aPos" },
+        { shader::data_type::FLOAT4, "aColor" },
+        { shader::data_type::FLOAT2, "aTexCoord" },
+    });
+
+    va.push_back(std::move(vb));
+    va.make_index_buffer(indices, sizeof(indices));
 
     //////float vertices[]
     //////{
@@ -85,76 +114,70 @@ void utd::application::run()
     ////    0, 1, 2,
     ////    3, 4, 5
     ////};
+#if 0
+    u32 VBO, VAO, EBO;
 
-    unsigned int VBO, VAO, EBO;
-    
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
-    
+
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    // texture coord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
-    auto texture = utd::texture::load("E:/Programming/untile/Untile/assets/textures/grass_3.png");
+    // texture coord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(7 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+#endif // 0
+
+
+    auto texture = utd::texture::load("E:/Programming/untile/Untile/assets/textures/sand_3.png");
     glBindTexture(GL_TEXTURE_2D, texture->get_id());
     
     /*glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);*/
 
-    glPolygonMode(GL_ELEMENT_ARRAY_BUFFER, 0);
+    //glPolygonMode(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glm::vec4 current_color(1.0f, 0.0f, 0.2f, 1.0f);
 
+    renderer::set_clear_color({ 0.52f, 0.8f, 0.9f, 1.0f });
+   
+    texture_shader->bind();
+    // texture_shader->set_float4("user_color", glm::vec4{1.f, 0.f, 0.f,1.f});
+    utd::clock clock;
     while (m_running)
     {
+        auto dt = clock.restart().sec();
+        
         glBindTexture(GL_TEXTURE_2D, texture->get_id());
         texture_shader->bind();
-        //triangle_shader->set_float4("triangle_color", current_color);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        //current_color.r++;
-        //current_color.g++;
-        //current_color.b++;
-
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
         
+        renderer::draw_indexed(va, 6);
+
         m_imgui_layer->begin();
         for(auto* layer : m_layer_stack)
         {
+            layer->on_update(dt);
             layer->on_render();
-            if (layer == dem)
-            {
-                current_color = dem->get_color();
-            }
         }
         m_imgui_layer->end();
         
         m_window->update();
         
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        renderer::clear();
     }
-
-    /*glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteProgram(triangle_shader->get_id());*/
-
-    auto elapsed = clock.elapsed().sec();
-    UTD_ENGINE_INFO("time elapsed: {0}sec", elapsed);
 }
 
 bool utd::application::close(utd::event& event)
@@ -194,9 +217,8 @@ void utd::triangle()
         "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
         "}\n\0";
 
-        
         auto window = utd::window::create(1280, 720, "Untile");
-        
+
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
         glCompileShader(vertexShader);

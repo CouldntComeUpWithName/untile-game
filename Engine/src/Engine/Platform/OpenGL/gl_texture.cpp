@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 
 #include <Engine/Core/Assert.h>
+
 static inline utd::image_format enum_cast(int channels);
 
 utd::gl_texture::gl_texture(const specs& specifications)
@@ -18,7 +19,7 @@ utd::gl_texture::gl_texture(const std::string& path)
     m_path = std::make_unique<std::string>(path);
 
     i32 channels;
-    byte* data = stbi_load(m_path.get()->c_str(), &m_specifications.width, &m_specifications.height, &channels, 0);
+    ubyte* data = stbi_load(m_path.get()->c_str(), &m_specifications.width, &m_specifications.height, &channels, 0);
     
     UTD_ENGINE_ASSERT(data, "Can\'t load a texture from file");
     m_loaded = true;
@@ -85,7 +86,7 @@ bool utd::gl_texture::is_loaded() const
 
 bool utd::gl_texture::operator==(const texture& other) const
 {
-    return false;
+    return m_id == other.get_id();
 }
 
 

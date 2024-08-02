@@ -29,6 +29,9 @@ void utd::glfw_window::init(u32 width, u32 height, const std::string& title, con
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    #endif
         UTD_ENGINE_ASSERT(status, "Can\'t initialize GLFW");
     }
     UTD_ENGINE_INFO("glfw is initialized");

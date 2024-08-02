@@ -150,9 +150,11 @@ std::string read_file(const std::string& filepath, std::ifstream& file_stream, s
 		auto size = file.tellg();
 
 		source.reserve(size);
+		
 		file.seekg(0);
 		file.read(&source[0], size);
 		file.close();
+		
 		return std::move(source);
 	}
 
@@ -173,7 +175,7 @@ std::string read_file1(const std::string& filepath)
 void utd::gl_shader::filepath(const std::string& vert_path, const std::string& frag_path)
 {
 	std::string vert_source = read_file(vert_path, std::ios::in | std::ios::binary);
-	std::string frag_source = read_file(frag_path, std::ios::in | std::ios::binary);	
+	std::string frag_source = read_file(frag_path, std::ios::in | std::ios::binary);
 
 	/*std::string vert_source = read_file1(vert_path);
 	std::string frag_source = read_file1(frag_path);*/
@@ -193,7 +195,7 @@ void utd::gl_shader::filepath(const std::string& vert_path, const std::string& f
 
 	if (!success)
 	{
-		i8 info[512];
+		char info[512];
 		glGetShaderInfoLog(vertex, 512, nullptr, info);
 		UTD_ENGINE_ERROR("Vertex shader compilation failed: {0}", info);
 	}
@@ -207,7 +209,7 @@ void utd::gl_shader::filepath(const std::string& vert_path, const std::string& f
 
 	if (!success)
 	{
-		i8 info[512];
+		char info[512];
 		glGetShaderInfoLog(fragment, 512, nullptr, info);
 		UTD_ENGINE_ERROR("Fragment shader compilation failed: {0}", info);
 	}

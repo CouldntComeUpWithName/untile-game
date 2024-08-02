@@ -1,6 +1,6 @@
 #pragma once
 
-#include<Engine/Render/texture.h>
+#include <Engine/Graphics/texture.h>
 #include <string>
 
 namespace utd
@@ -26,6 +26,5 @@ namespace utd
         bool m_loaded;
         std::uptr<std::string> m_path;
         texture::specs m_specifications;
-
     };
 }

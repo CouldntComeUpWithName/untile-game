@@ -4,7 +4,6 @@ function(make_groups target relative_root)
 
     foreach(source IN LISTS sources)
         get_filename_component(source_path ${source} PATH)
-        message(${relative_path} "\n" ${source_path} "\n")
         file(RELATIVE_PATH relative_path "${PROJECT_SOURCE_DIR}" ${source_path})
         # message(${relative_path} "\n" ${relative_root} "\n" ${target_position} "\n")
         string(FIND ${relative_path} ${relative_root} target_position)
@@ -18,5 +17,7 @@ function(make_groups target relative_root)
         source_group("${result_path}" FILES "${source}")
 
     endforeach()
+    
+    message(STATUS "\"${target}\"" " sources has been grouped" )
 
 endfunction()

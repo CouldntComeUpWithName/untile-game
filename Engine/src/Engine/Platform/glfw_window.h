@@ -1,11 +1,11 @@
 #pragma once
 
-struct GLFWwindow;
-
 #include <Engine/Core/window.h>
 #include <Engine/Core/base.h>
 #include <Engine/Core/log.h>
-#include <Engine/Core/graphics_context.h>
+#include <Engine/Graphics/graphics_context.h>
+
+struct GLFWwindow;
 
 namespace utd
 {

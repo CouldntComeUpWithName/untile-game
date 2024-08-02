@@ -136,7 +136,8 @@ RECENT REVISION HISTORY:
 //    - no JPEGs with arithmetic coding
 //    - GIF always returns *comp=4
 //
-// Basic usage (see HDR discussion below for HDR usage):
+// Basic 
+// (see HDR discussion below for HDR usage):
 //    int x,y,n;
 //    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
 //    // ... process data if not NULL ...

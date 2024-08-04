@@ -16,6 +16,8 @@ utd::gl_texture::gl_texture(const specs& specifications)
 
 utd::gl_texture::gl_texture(const std::string& path)
 {
+    
+    stbi_set_flip_vertically_on_load(true);
     m_path = std::make_unique<std::string>(path);
 
     i32 channels;

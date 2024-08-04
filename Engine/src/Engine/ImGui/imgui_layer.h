@@ -10,6 +10,8 @@
 #include <Engine/Graphics/shader.h>
 #include <Engine/Graphics/vertex_array.h>
 
+#define UTD_IMGUI_DISABLE 0
+
 namespace utd
 {   
     class imgui_layer : public layer
@@ -24,8 +26,8 @@ namespace utd
         virtual void on_event(event&) override;
         ~imgui_layer() override = default;
 
-        void begin();
-        void end();
+        void begin()const;
+        void end()const;
     private:
     };
 

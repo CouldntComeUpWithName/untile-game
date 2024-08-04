@@ -22,6 +22,7 @@
 #include <Engine/Graphics/index_buffer.h>
 #include <Engine/Graphics/vertex_buffer.h>
 #include <Engine/Graphics/vertex_attrib.h>
+#include <Engine/Profiling/Profile.h>
 
 utd::application::application(const cmdline_args &)
     : m_running(true)
@@ -61,6 +62,8 @@ utd::application::~application()
 
 void utd::application::run()
 {
+    UTD_PROFILE_FUNC(tracy::Color::Red);
+
     using namespace utd::literals;
     //
     
@@ -140,8 +143,14 @@ void utd::application::run()
     glEnableVertexAttribArray(2);
 #endif // 0
 
+    //UTD_PROFILE_BEGIN("Enable Blending", profile::color::lightblue)
+    //
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //
+    //UTD_PROFILE_END("Enable Blending")
 
-    auto texture = utd::texture::load("E:/Programming/untile/Untile/assets/textures/sand_3.png");
+    auto texture = utd::texture::load("E:/Programming/untile/Untile/assets/textures/adventurer-v1.5-Sheet.png");
     glBindTexture(GL_TEXTURE_2D, texture->get_id());
     
     /*glBindVertexArray(VAO);
@@ -154,18 +163,21 @@ void utd::application::run()
 
     renderer::set_clear_color({ 0.52f, 0.8f, 0.9f, 1.0f });
    
+    m_window->vsync(false);
+
     texture_shader->bind();
     // texture_shader->set_float4("user_color", glm::vec4{1.f, 0.f, 0.f,1.f});
     utd::clock clock;
     while (m_running)
     {
         auto dt = clock.restart().sec();
-        
         glBindTexture(GL_TEXTURE_2D, texture->get_id());
         texture_shader->bind();
         
         renderer::draw_indexed(va, 6);
 
+        UTD_PROFILE_BEGIN("Layer Drawing time", tracy::Color::Orange);
+        
         m_imgui_layer->begin();
         for(auto* layer : m_layer_stack)
         {
@@ -173,6 +185,8 @@ void utd::application::run()
             layer->on_render();
         }
         m_imgui_layer->end();
+
+        UTD_PROFILE_END();
         
         m_window->update();
         
@@ -196,7 +210,7 @@ void utd::application::on_event(event& event)
     event_dispatcher::dispatch<window_close_event>(event, UTD_BIND_EVENT(application::close));
     event_dispatcher::dispatch<window_resize_event>(event, UTD_BIND_EVENT(application::window_resize));
 
-    UTD_ENGINE_INFO(event.str());
+    //UTD_ENGINE_INFO(event.str());
 }
 
 void utd::triangle()

@@ -13,12 +13,13 @@
 #include <Engine/Graphics/vertex_attrib.h>
 #include <Engine/Graphics/renderer.h>
 
-
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 
-#include<glm/vec4.hpp>
+#include <glm/vec4.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include <Engine/Profiling/profile.h>
 
 utd::imgui_layer::imgui_layer(const std::string &name)
     : layer(name)
@@ -30,6 +31,8 @@ void utd::imgui_layer::on_attach()
 {
     IMGUI_CHECKVERSION();
     
+    UTD_PROFILE_FUNC(utd::profile::color::deepred);
+
     ImGui::CreateContext();
     
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -72,15 +75,25 @@ void utd::imgui_layer::on_event(event& event)
     event.handled |= (event.get_category() == event::category::KEYBOARD) & io.WantCaptureKeyboard;
 }
 
-void utd::imgui_layer::begin()
+void utd::imgui_layer::begin() const
 {
+    UTD_PROFILE_FUNC(profile::color::lightcyan);
+
+#if !defined(UTD_CONFIG_SHIP) && UTD_IMGUI_DISABLE == 0
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
+    UTD_PROFILE_BEGIN("ImGui::NewFrame")
     ImGui::NewFrame();
+    UTD_PROFILE_END();
+#endif
+    //ZoneNamedN(setupzone, "ImGui begin", true);
 }
 
-void utd::imgui_layer::end()
+void utd::imgui_layer::end() const
 {
+    UTD_PROFILE_FUNC(profile::color::darkcyan);
+
+#if !defined(UTD_CONFIG_SHIP) && UTD_IMGUI_DISABLE == 0
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     
@@ -90,16 +103,23 @@ void utd::imgui_layer::end()
 
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
+        //UTD_PROFILE_SCOPE_C("Check if viewport enable in ImGui", tracy::Color::Red);
         GLFWwindow* backup_current_context = glfwGetCurrentContext();
+        
+        UTD_PROFILE_SCOPE("Update and Render ImGui viewport", profile::color::deeprose);
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
         glfwMakeContextCurrent(backup_current_context);
     }
 
+#endif /* !defined(UTD_CONFIG_SHIP) || UTD_IMGUI_DISABLE != 1 */
+
 }
 
 void utd::demo::on_render()
 {
+    UTD_PROFILE_FUNC();
+
     static float f = 0.0f;
     static int counter = 0;
     static bool show_demo_window = true;
@@ -159,15 +179,13 @@ void utd::triangle_layer::on_attach()
     m_vertex_array.push_back(std::move(vb));
     //m_vertex_array.set_index_buffer(std::make_unique<index_buffer>(indices, sizeof(indices)));
     
-    {
         u32 indices[]
         {
             0, 1, 2,
             3, 4, 5
         };
 
-        m_vertex_array.make_index_buffer(index_buffer{0, 1, 2, 3, 4, 5});
-    }
+        m_vertex_array.make_index_buffer(indices);
 
     //auto& vert_buffer = m_vertex_array.emplace_back(vertices, sizeof(vertices));
     //vert_buffer.set_layout
@@ -182,8 +200,9 @@ void utd::triangle_layer::on_attach()
 void utd::triangle_layer::on_render()
 {
 
+    UTD_PROFILE_FUNC(); 
+    //UTD_GET_RESPECTIVE_MACRO_IMPL("Hello", tracy::Color::Blue, ZoneScopedNC, ZoneScopedN)("Hello", tracy::Color::Blue);
     static float temp_color[4]{};
-
     static unsigned int VBO, VAO, EBO;
 
 #if 0
@@ -263,6 +282,7 @@ void utd::triangle_layer::on_update(float dt)
         accumulator += 0.25f * dt;
     
     m_shader->bind();
+    UTD_PROFILE_SCOPE(UTD_CONCAT(__FUNCTION__, " shader values setting"), profile::color::lightred);
     m_shader->set_float4("triangle_color", color);
     m_shader->set_float("offset", accumulator);
 

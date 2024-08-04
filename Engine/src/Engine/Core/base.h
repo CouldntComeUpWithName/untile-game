@@ -8,6 +8,7 @@
 
 #define BIT(offset) (1 << offset)
 #define STR(str) #str
+#define UTD_CONCAT(x, y) x##y
 #define UTD_BIND_EVENT(fn) [this](auto&&... args) -> decltype(auto) {return this->fn(std::forward<decltype(args)>(args)...);}
 
 #if UTD_CONFIG_DEBUG
@@ -16,6 +17,8 @@
 	#else
 		#define UTD_DEBUGBREAK() std::terminate()
 	#endif
+#else 
+	#define UTD_DEBUGBREAK()
 #endif
 
 namespace utd

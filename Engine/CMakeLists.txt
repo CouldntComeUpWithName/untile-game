@@ -19,6 +19,10 @@ target_sources(Untiled PRIVATE ${SOURCES})
 
 target_link_libraries(Untiled PRIVATE opengl32 PRIVATE glad PRIVATE glfw PRIVATE imgui)
 
+if(TRACY_ENABLE)
+    target_link_libraries(Untiled PUBLIC TracyClient)
+endif()
+
 set_target_properties(Untiled PROPERTIES 
     FOLDER "Engine"
     ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/UntiledEngine

@@ -33,7 +33,7 @@ utd::gl_texture::gl_texture(const std::string& path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     
     if(channels == 4)
     {
@@ -76,7 +76,7 @@ const std::string& utd::gl_texture::path() const
     return *m_path.get();
 }
 
-void utd::gl_texture::set_data(u32 slot)
+void utd::gl_texture::set_data(void* data, u32 slot)
 {
 
 }
@@ -89,6 +89,11 @@ bool utd::gl_texture::is_loaded() const
 bool utd::gl_texture::operator==(const texture& other) const
 {
     return m_id == other.get_id();
+}
+
+void utd::gl_texture::bind()
+{
+    glBindTexture(GL_TEXTURE_2D, m_id);
 }
 
 

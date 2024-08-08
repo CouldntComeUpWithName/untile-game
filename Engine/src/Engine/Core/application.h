@@ -9,6 +9,9 @@
 #include <Engine/Events/application_event.h>
 #include <Engine/ImGui/imgui_layer.h>
 
+#include <Engine/Graphics/camera.h>
+
+
 #include <glad/glad.h> // temp
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -31,7 +34,12 @@ namespace utd
         void run();
         void on_event(event&);
         
-        inline window& get_window() { return *m_window.get(); };
+        inline window& get_window() { return *m_window.get(); }
+        inline camera& get_camera() { return m_camera; }
+
+        void push_layer(layer* layer);
+        void push_overlay(layer* overlay);
+
     protected:
         bool close(event&);
         bool window_resize(window_resize_event&);
@@ -41,9 +49,10 @@ namespace utd
         imgui_layer* m_imgui_layer;
         std::uptr<window> m_window;
         layer_stack m_layer_stack;
+        utd::camera m_camera;
     };
 
     void triangle();
-
+    void cubes();
 
 }

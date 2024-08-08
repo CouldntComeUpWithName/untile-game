@@ -219,8 +219,6 @@ int App(std::string_view title)
     return 0;
 }
 
-void processInput(GLFWwindow* window);
-
 void Triangle()
 {
     // settings
@@ -356,7 +354,7 @@ void Triangle()
         ImGui_ImplOpenGL3_Init("#version 330");
 
         // uncomment this call to draw in wireframe polygons.
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        //glPolygonMode(GL_m_front_AND_BACK, GL_LINE);
         glUseProgram(shaderProgram);
         // render loop
         // -----------
@@ -364,8 +362,7 @@ void Triangle()
         {
             // input
             // -----
-            processInput(window);
-
+            
             // render
             // ------
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -419,11 +416,6 @@ void Triangle()
 
 }
 
-void processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------

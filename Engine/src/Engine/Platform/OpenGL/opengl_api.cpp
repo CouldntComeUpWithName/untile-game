@@ -33,3 +33,14 @@ void utd::opengl_api::draw_indexed(const vertex_array& vertex_array, u32 count)
 void utd::opengl_api::draw_lines(/*TODO: add parameters*/)
 {
 }
+
+void utd::opengl_api::draw_arrays(const vertex_array& vertex_array, u32 first, u32 count)
+{
+    vertex_array.bind();
+    glDrawArrays(GL_TRIANGLES, first, count);
+}
+
+void utd::opengl_api::depth_buffer(bool enabled)
+{
+    glEnable(GL_DEPTH_TEST);
+}

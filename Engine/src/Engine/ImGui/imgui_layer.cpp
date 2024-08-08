@@ -119,7 +119,7 @@ void utd::imgui_layer::end() const
 void utd::demo::on_render()
 {
     UTD_PROFILE_FUNC();
-
+    
     static float f = 0.0f;
     static int counter = 0;
     static bool show_demo_window = true;
@@ -253,7 +253,7 @@ void utd::triangle_layer::on_render()
     ImGui::Begin("Hello, Triangle!");                          // Create a window called "Hello, world!" and append into it.
 
     //ImGui::Text("T");               // Display some text (you can use a format strings too)
-    ImGui::Checkbox("visible", &visible);      // Edit bools storing our window open/close state
+    //ImGui::Checkbox("visible", &visible);      // Edit bools storing our window open/close state
 
     //ImGui::SameLine();
 

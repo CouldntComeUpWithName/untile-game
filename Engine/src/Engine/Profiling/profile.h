@@ -13,10 +13,7 @@
 #include <Engine/Utils/object_traits.h>
 #include <Engine/Core/System/clock.h>
 
-inline int current_color_for_profiling_block = 0x000000ff;
 
-#pragma region(Temporarily unavailable)
-#if 1
 namespace utd
 {
     struct profile : utility
@@ -89,15 +86,12 @@ namespace utd
     
 } /* namespace utd */
 
-#endif
-#pragma endregion
 
 #if UTD_PROFILING_ENABLE
     #ifdef TRACY_ENABLE
 
     #include <tracy/Tracy.hpp>
-    #include <tracy/TracyOpenGL.hpp>
-
+    //#include <tracy/TracyOpenGL.hpp>
 
     #if UTD_MSVC // MSVC cannot evaluate ZoneScoped to a constant due to __LINE__ macro not being a compile-time constant value
         #define UTD_PROFILE_SCOPE(name, ...) static const tracy::SourceLocationData TracyConcat(__tracy_source_location,UTD_LINE) { name, UTD_FUNCTION,  UTD_FILE, (uint32_t)UTD_LINE, int{__VA_ARGS__} }; tracy::ScopedZone varname( &TracyConcat(__tracy_source_location,__LINE__), true )
@@ -110,9 +104,12 @@ namespace utd
 
     #define UTD_PROFILE_BEGIN(name, ...) { UTD_PROFILE_SCOPE(name, __VA_ARGS__);
     #define UTD_PROFILE_END(...) }
-    
+   
+    #define UTD_PROFILE_FRAME_MARK(...) FrameMarkNamed(std::string_view(__VA_ARGS__).data())
+    #define UTD_PROFILE_FRAME_BEGIN(...) FrameMarkStart(_VA_ARGS__)
+    #define UTD_PROFILE_FRAME_END(...) FrameMarkEnd(_VA_ARGS__)
     #else
-        #error No profiler tool has been selected
+        #error No profiler tool is selected
     #endif
 
 #else
@@ -122,6 +119,10 @@ namespace utd
 
 #define UTD_PROFILE_BEGIN(...)
 #define UTD_PROFILE_END(...)
+
+#define UTD_PROFILE_FRAME_MARK(...) 
+#define UTD_PROFILE_FRAME_BEGIN(...)
+#define UTD_PROFILE_FRAME_END(...)
 
 #endif /* TRACY_ENABLE */
 

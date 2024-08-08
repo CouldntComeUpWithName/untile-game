@@ -23,6 +23,9 @@ namespace utd
         static void default_callback(event&);
         
     public:
+        void show_cursor(bool state) override;
+        bool cursor_disabled() override;
+
         void* native_handle() override;
         bool opened() override;
         bool vsync() override;

@@ -50,3 +50,13 @@ void utd::renderer::draw_indexed(const utd::vertex_array& vertex_array, u32 coun
 {
     s_graphics_api->draw_indexed(vertex_array, count);
 }
+
+void utd::renderer::draw_arrays(const vertex_array& vertex_array, u32 first, u32 count)
+{
+    s_graphics_api->draw_arrays(vertex_array, first, count);
+}
+
+void utd::renderer::depth_buffer(bool enabled)
+{
+    s_graphics_api->depth_buffer(enabled);
+}

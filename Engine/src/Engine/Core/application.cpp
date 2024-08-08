@@ -10,6 +10,7 @@
 
 #include <Engine/Core/Log.h>
 #include <Engine/Core/Window.h>
+#include <Engine/Core/Input.h>
 
 #include <Engine/Events/application_event.h>
 #include <Engine/Core/System/clock.h>
@@ -22,6 +23,7 @@
 #include <Engine/Graphics/index_buffer.h>
 #include <Engine/Graphics/vertex_buffer.h>
 #include <Engine/Graphics/vertex_attrib.h>
+
 #include <Engine/Profiling/Profile.h>
 
 utd::application::application(const cmdline_args &)
@@ -37,18 +39,21 @@ utd::application::application(const cmdline_args &)
     
     renderer::init();
     
-    m_imgui_layer = new imgui_layer();
-    m_layer_stack.push_overlay(m_imgui_layer);
-    m_imgui_layer->on_attach();
+    push_overlay(new imgui_layer());
+    push_overlay(new demo());
 
-    demo* dem = new demo();
-    m_layer_stack.push_overlay(dem);
-    dem->on_attach();
-    
-    auto* layer = new triangle_layer();
+}
+
+void utd::application::push_layer(layer *layer)
+{
     m_layer_stack.push(layer);
     layer->on_attach();
+}
 
+void utd::application::push_overlay(layer *overlay)
+{
+    m_layer_stack.push_overlay(overlay);
+    overlay->on_attach();
 }
 
 utd::application::~application()
@@ -62,119 +67,19 @@ utd::application::~application()
 
 void utd::application::run()
 {
-    UTD_PROFILE_FUNC(tracy::Color::Red);
+    UTD_PROFILE_FUNC(profile::color::red);
 
     using namespace utd::literals;
-    //
-    
 
-    // auto triangle_shader = utd::shader::create(vertexShaderSource, fragmentShaderSource);
-    // auto triangle_shader = utd::shader::load("E:/Programming/untile/Untile/assets/shaders/triangle.vert", "E:/Programming/untile/Untile/assets/shaders/triangle.frag");
-    
-    float vertices[] = {
-        // positions          // colors                // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f, 1.f,    1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f, 1.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f  // top left 
-    };
-    unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-    };
-
-    auto texture_shader = utd::shader::load("E:/Programming/untile/Untile/assets/shaders/texture.vert", "E:/Programming/untile/Untile/assets/shaders/texture.frag");
-
-    vertex_array va;
-    
-    std::uptr<vertex_buffer> vb = std::make_unique<vertex_buffer>(vertices, sizeof(vertices));
-    vb->set_layout
-    ({
-        { shader::data_type::FLOAT3, "aPos" },
-        { shader::data_type::FLOAT4, "aColor" },
-        { shader::data_type::FLOAT2, "aTexCoord" },
-    });
-
-    va.push_back(std::move(vb));
-    va.make_index_buffer(indices, sizeof(indices));
-
-    //////float vertices[]
-    //////{
-    //////     //first
-    //////    0.3f, -0.5f, 0.0f, // left  
-    //////    0.3f, 0.5f, 0.0f, // right 
-    //////    0.9f, -0.5f, 0.0f,  // top   
-    //////};
-    ////    //second
-
-    ////    -0.7f, 0.7f, 0.f,
-    ////    -0.3f, 0.7f, 0.f,
-    ////    -0.35f, 0.9f, 0.f
-    ////};
-
-    ////u32 indices[]
-    ////{
-    ////    0, 1, 2,
-    ////    3, 4, 5
-    ////};
-#if 0
-    u32 VBO, VAO, EBO;
-
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // texture coord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(7 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-#endif // 0
-
-    //UTD_PROFILE_BEGIN("Enable Blending", profile::color::lightblue)
-    //
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //
-    //UTD_PROFILE_END("Enable Blending")
-
-    auto texture = utd::texture::load("E:/Programming/untile/Untile/assets/textures/adventurer-v1.5-Sheet.png");
-    glBindTexture(GL_TEXTURE_2D, texture->get_id());
-    
-    /*glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);*/
-
-    //glPolygonMode(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glm::vec4 current_color(1.0f, 0.0f, 0.2f, 1.0f);
-
-    renderer::set_clear_color({ 0.52f, 0.8f, 0.9f, 1.0f });
-   
     m_window->vsync(false);
 
-    texture_shader->bind();
-    // texture_shader->set_float4("user_color", glm::vec4{1.f, 0.f, 0.f,1.f});
     utd::clock clock;
     while (m_running)
     {
         auto dt = clock.restart().sec();
-        glBindTexture(GL_TEXTURE_2D, texture->get_id());
-        texture_shader->bind();
-        
-        renderer::draw_indexed(va, 6);
+
+        renderer::set_clear_color(glm::vec4{ 0.2f, 0.3f, 0.3f, 1.0f });
+        renderer::clear();
 
         UTD_PROFILE_BEGIN("Layer Drawing time", tracy::Color::Orange);
         
@@ -188,13 +93,17 @@ void utd::application::run()
 
         UTD_PROFILE_END();
         
+        UTD_PROFILE_SCOPE("application::m_window Update");
+        
         m_window->update();
         
-        renderer::clear();
+        UTD_PROFILE_FRAME_MARK();
     }
 }
 
-bool utd::application::close(utd::event& event)
+
+
+bool utd::application::close(utd::event &event)
 {
     return !(m_running = false);
 }
@@ -210,7 +119,12 @@ void utd::application::on_event(event& event)
     event_dispatcher::dispatch<window_close_event>(event, UTD_BIND_EVENT(application::close));
     event_dispatcher::dispatch<window_resize_event>(event, UTD_BIND_EVENT(application::window_resize));
 
-    //UTD_ENGINE_INFO(event.str());
+    for (auto* layer : m_layer_stack)
+    {
+        layer->on_event(event);
+    }
+
+    UTD_ENGINE_INFO(event.str());
 }
 
 void utd::triangle()
@@ -320,7 +234,7 @@ void utd::triangle()
         ImGui_ImplOpenGL3_Init("#version 330");
 
         // uncomment this call to draw in wireframe polygons.
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        //glPolygonMode(GL_m_front_AND_BACK, GL_LINE);
         glUseProgram(shaderProgram);
         // render loop
         // -----------
@@ -377,3 +291,17 @@ void utd::triangle()
         // ------------------------------------------------------------------
         glfwTerminate();
 }
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+//void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+//{
+//    fov -= (float)yoffset;
+//    if (fov < 1.0f)
+//        fov = 1.0f;
+//    if (fov > 45.0f)
+//        fov = 45.0f;
+//}

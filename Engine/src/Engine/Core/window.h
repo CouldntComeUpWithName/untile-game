@@ -25,6 +25,8 @@ namespace utd
     public:
         window() = default;
 
+        virtual void show_cursor(bool = true) = 0;
+        virtual bool cursor_disabled()      = 0;
         virtual void* native_handle()       = 0;
         virtual bool opened()               = 0; 
         virtual bool vsync()                = 0;

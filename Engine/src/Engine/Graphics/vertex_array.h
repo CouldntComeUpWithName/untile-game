@@ -48,6 +48,8 @@ namespace utd
         
         vertex_buffer& front() const { return *m_array.front().get(); }
         vertex_buffer& back() const { return *m_array.back().get(); }
+        
+        size_t size() const { return m_array.size(); }
 
         vertex_buffer& operator[](int);
     private:

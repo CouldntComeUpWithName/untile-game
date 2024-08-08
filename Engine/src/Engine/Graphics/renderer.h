@@ -18,6 +18,9 @@ namespace utd
         static void draw_indexed(const vertex_array& vertex_array, u32 count);
         static void draw_lines();
 
+        static void draw_arrays(const vertex_array& vertex_array, u32 first, u32 count);
+        static void depth_buffer(bool);
+
         static inline graphics_api::type API() { return s_api_type; };
        
     private:

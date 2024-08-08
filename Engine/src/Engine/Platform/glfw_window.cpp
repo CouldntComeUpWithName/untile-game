@@ -160,6 +160,19 @@ void utd::glfw_window::default_callback(utd::event&)
 
 }
 
+void utd::glfw_window::show_cursor(bool state)
+{
+    if(state)
+        glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    else
+        glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+bool utd::glfw_window::cursor_disabled()
+{
+    return glfwGetInputMode(m_handle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
+}
+
 void *utd::glfw_window::native_handle()
 {
     return m_handle;

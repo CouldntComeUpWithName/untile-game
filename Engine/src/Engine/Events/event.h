@@ -57,9 +57,9 @@ namespace utd
         virtual std::string str() const                = 0; 
     
     public:
-        bool handled;
+        bool handled = false;
     protected:
-        category_t m_category;
+        category_t m_category = NONE;
     };
 
     class event_dispatcher
@@ -69,7 +69,6 @@ namespace utd
         std::enable_if_t<std::is_base_of_v<event, t_event_type>, int> = 0>
         static bool dispatch(event& event, const t_func& func)
         {
-            
             if(event.get_type() == t_event_type::static_type())
             {
                 event.handled |= func(static_cast<t_event_type&>(event));
@@ -79,7 +78,7 @@ namespace utd
         }
     
     };
-    
+
     inline std::ostream& operator << (std::ostream& ostream, const event& event)
     {
         return ostream << event.str();

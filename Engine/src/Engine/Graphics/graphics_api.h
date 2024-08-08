@@ -26,6 +26,9 @@ namespace utd
         virtual void set_clear_color(const glm::vec4&) = 0;
         virtual void draw_indexed(const vertex_array& vertex_array, u32 count) = 0;
         virtual void draw_lines() = 0;
+        virtual void draw_arrays(const vertex_array& vertex_array, u32 first, u32 count) = 0;
+        
+        virtual void depth_buffer(bool enabled) = 0;
     };
     
 } /* namespace utd */

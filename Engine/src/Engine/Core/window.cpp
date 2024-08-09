@@ -4,7 +4,7 @@
 #include "log.h"
 #include "upch.h"
 
-#include "../Platform/glfw_window.h"
+#include "Engine/Platform/glfw_window.h"
 // Dear ImGui: standalone example application for GLFW + OpenGL 3, using programmable pipeline
 // (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
 
@@ -219,8 +219,6 @@ int App(std::string_view title)
     return 0;
 }
 
-void processInput(GLFWwindow* window);
-
 void Triangle()
 {
     // settings
@@ -247,9 +245,7 @@ void Triangle()
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-#ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
+
 
         // glfw window creation
         // --------------------
@@ -314,9 +310,9 @@ void Triangle()
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         float vertices[] = {
-            -0.5f, -0.5f, 0.0f, // left  
-             0.5f, -0.5f, 0.0f, // right 
-             0.0f,  0.5f, 0.0f  // top   
+            -0.5f, 0.5f, 0.0f, // left  
+             0.5f, 0.5f, 0.0f, // right 
+             0.0f,  -0.5f, 0.0f  // top   
         };
 
         unsigned int VBO, VAO;
@@ -358,7 +354,7 @@ void Triangle()
         ImGui_ImplOpenGL3_Init("#version 330");
 
         // uncomment this call to draw in wireframe polygons.
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        //glPolygonMode(GL_m_front_AND_BACK, GL_LINE);
         glUseProgram(shaderProgram);
         // render loop
         // -----------
@@ -366,8 +362,7 @@ void Triangle()
         {
             // input
             // -----
-            processInput(window);
-
+            
             // render
             // ------
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -421,11 +416,6 @@ void Triangle()
 
 }
 
-void processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------

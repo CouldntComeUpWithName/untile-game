@@ -5,7 +5,6 @@ add_subdirectory(imgui)
 
 
 
-
 #setting target properties
 #glfw
 # set_target_properties(glfw PROPERTIES FOLDER "Deps")
@@ -18,3 +17,7 @@ set_target_properties(spdlog PROPERTIES FOLDER "Deps")
 
 #imgui
 set_target_properties(imgui PROPERTIES FOLDER "Deps")
+
+if(TRACY_ENABLE)
+    set_target_properties(TracyClient PROPERTIES FOLDER "Deps")
+endif()

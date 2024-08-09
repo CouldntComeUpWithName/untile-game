@@ -29,6 +29,9 @@ void utd::glfw_window::init(u32 width, u32 height, const std::string& title, con
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    #endif
         UTD_ENGINE_ASSERT(status, "Can\'t initialize GLFW");
     }
     UTD_ENGINE_INFO("glfw is initialized");
@@ -155,6 +158,19 @@ void utd::glfw_window::init(const properties& props, const event_callback_func&)
 void utd::glfw_window::default_callback(utd::event&)
 {
 
+}
+
+void utd::glfw_window::show_cursor(bool state)
+{
+    if(state)
+        glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    else
+        glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+bool utd::glfw_window::cursor_disabled()
+{
+    return glfwGetInputMode(m_handle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
 }
 
 void *utd::glfw_window::native_handle()

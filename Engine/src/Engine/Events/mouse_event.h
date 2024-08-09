@@ -13,7 +13,7 @@ namespace utd
             : m_x(x), m_y(y)
         { }
         
-        glm::vec2 get_position(){ return glm::vec2{m_x, m_y}; }
+        glm::vec2 get_position(){ return glm::vec2{ m_x, m_y }; }
         
         float get_x(){ return m_x; } 
         float get_y(){ return m_y; }
@@ -22,7 +22,7 @@ namespace utd
 
         virtual category_t get_category() const override { return event::category::MOUSE; }
     private:
-        float m_x, m_y; 
+        float m_x, m_y;
     };
 
 
@@ -62,14 +62,4 @@ namespace utd
     private:
     };
 
-
-
 } /* namespace utd */
-
-namespace event
-{
-    class base
-    {
-
-    };
-}

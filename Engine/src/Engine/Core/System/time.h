@@ -1,6 +1,5 @@
 #pragma once
-#include "../base.h"
-#include<chrono>
+#include <Engine/Core/Base.h>
 
 namespace utd
 {
@@ -8,6 +7,7 @@ namespace utd
 	{
 	public:
 		using nanoseconds_t = i64;
+
 	public:
 		constexpr time()                         noexcept;
 		constexpr time(const time&)              noexcept;
@@ -45,9 +45,9 @@ namespace utd
 		
 		friend time& operator /= (time&, const time);
 		friend time& operator %= (time&, const time);
-		friend time& operator -= (time&, const time&) noexcept;
-		friend time& operator += (time&, const time)  noexcept;
-		friend time& operator *= (time&, const time)  noexcept;
+		friend time& operator -= (time&, const time) noexcept;
+		friend time& operator += (time&, const time) noexcept;
+		friend time& operator *= (time&, const time) noexcept;
 		
 		friend time& operator /= (time&, nanoseconds_t);
 		friend time& operator %= (time&, nanoseconds_t);
@@ -65,7 +65,8 @@ namespace utd
 		friend constexpr bool operator >= (const time, const time) noexcept;
 		
 		friend constexpr bool operator == (const time, const time) noexcept;
-		friend constexpr bool operator != (const time, const time) noexcept;		
+		friend constexpr bool operator != (const time, const time) noexcept;
+
 	private:
 		nanoseconds_t m_time;
 	};
@@ -76,12 +77,12 @@ namespace utd::literals
 {
 	constexpr utd::time operator""_sec(long double val)noexcept
 	{
-		return utd::time(val * 1000 * 1000 * 1000);
+		return utd::time(static_cast<time::nanoseconds_t>(val * 1000 * 1000 * 1000));
 	}
 
 	constexpr time operator""_sec(u64 val)noexcept
 	{
-		return time(val * 1000 * 1000 * 1000);
+		return time(static_cast<time::nanoseconds_t>(val * 1000 * 1000 * 1000));
 	}
 
 	constexpr time operator""_ms(u64 val)noexcept
@@ -101,7 +102,7 @@ namespace utd::literals
 }
 
 inline constexpr utd::time::time() noexcept
-	:m_time{}
+	: m_time{0}
 { /*intentionally left empty*/ }
 
 inline constexpr utd::time::time(const time& rhs) noexcept
@@ -109,7 +110,7 @@ inline constexpr utd::time::time(const time& rhs) noexcept
 { /*intentionally left empty*/ }
 
 inline constexpr utd::time::time(time&& rhs) noexcept
-	:m_time{rhs.m_time}
+	: m_time{rhs.m_time}
 { /*intentionally left empty*/ }
 
 inline constexpr utd::time::time(nanoseconds_t time_point) noexcept
@@ -118,12 +119,12 @@ inline constexpr utd::time::time(nanoseconds_t time_point) noexcept
 
 inline constexpr float utd::time::sec() const noexcept
 {
-	return m_time * 0.001f * 0.001f * 0.001f;
+	return static_cast<float>(m_time * 0.001f * 0.001f * 0.001f);
 }
 
 inline constexpr utd::i64 utd::time::ms() const noexcept
 {
-	return m_time * 0.001f * 0.001f;
+	return static_cast<time::nanoseconds_t>(m_time * 0.001f * 0.001f);
 }
 
 inline constexpr utd::i64 utd::time::ns() const noexcept
@@ -133,13 +134,13 @@ inline constexpr utd::i64 utd::time::ns() const noexcept
 
 inline constexpr utd::i64 utd::time::us() const noexcept
 {
-	return static_cast<i64>(m_time * 0.001f);
+	return static_cast<time::nanoseconds_t>(m_time * 0.001f);
 }
 
 inline constexpr utd::time utd::seconds(const float amount) noexcept
 {
 	//return cn::time(amount * 1'000'000'000);
-	return time(static_cast<i64>(amount * 1000 * 1000 * 1000));
+	return time(static_cast<time::nanoseconds_t>(amount * 1000 * 1000 * 1000));
 }
 
 inline constexpr utd::time utd::nanoseconds(i64 amount) noexcept
@@ -177,7 +178,7 @@ inline constexpr utd::time utd::operator/(const time lhs, const time rhs)
 	return time(lhs.m_time / rhs.m_time);
 }
 
-constexpr utd::time utd::operator%(const time lhs, const time rhs)
+inline constexpr utd::time utd::operator%(const time lhs, const time rhs)
 {
 	return time(lhs.m_time % rhs.m_time);
 }
@@ -202,19 +203,19 @@ inline constexpr utd::time utd::operator/(const time lhs, time::nanoseconds_t va
 	return time(lhs.m_time / value);
 }
 
-constexpr utd::time utd::operator%(const time lhs, time::nanoseconds_t value)
+inline constexpr utd::time utd::operator%(const time lhs, time::nanoseconds_t value)
 {
 	return time(lhs.m_time % value);
 }
 
 inline constexpr utd::time utd::operator*(const time lhs, float value) noexcept
 {
-	return time(lhs.m_time * value);
+	return time(static_cast<time::nanoseconds_t>(lhs.m_time * value));
 }
 
 inline constexpr utd::time utd::operator/(const time lhs, float value)
 {
-	return time(lhs.m_time / value);
+	return time(static_cast<time::nanoseconds_t>(lhs.m_time / value));
 }
 
 inline constexpr bool utd::operator<(const time lhs, const time rhs) noexcept

@@ -6,7 +6,7 @@
 #include <Engine/Events/event.h>
 
 #define UTD_DEBUG_NAME(m_debug_name) std::string m_debug_name
-#define UTD_DEBUG_NAME_FN(debug_name_func, m_debug_name) const std::string& debug_name(){ return m_debug_name; }
+#define UTD_DEBUG_NAME_FN(debug_name_func, m_debug_name) const char* debug_name(){ return #m_debug_name; }
 
 namespace utd
 {
@@ -15,7 +15,6 @@ namespace utd
     public:
         layer() = default;
         layer(const std::string& name)
-            : m_debug_name(name)
         { }
 
         virtual void on_attach(){}
@@ -25,10 +24,9 @@ namespace utd
         virtual void on_event(event&){}
         virtual ~layer() = default;
     
-        UTD_DEBUG_NAME_FN(debug_name, m_debug_name);
+        UTD_DEBUG_NAME_FN(debug_name, "basic layer");
 
     protected:
-        UTD_DEBUG_NAME(m_debug_name);
     };
 
 }

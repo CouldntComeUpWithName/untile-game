@@ -1,11 +1,11 @@
 #pragma once
 
-struct GLFWwindow;
-
 #include <Engine/Core/window.h>
 #include <Engine/Core/base.h>
 #include <Engine/Core/log.h>
-#include <Engine/Core/graphics_context.h>
+#include <Engine/Graphics/graphics_context.h>
+
+struct GLFWwindow;
 
 namespace utd
 {
@@ -23,6 +23,9 @@ namespace utd
         static void default_callback(event&);
         
     public:
+        void show_cursor(bool state) override;
+        bool cursor_disabled() override;
+
         void* native_handle() override;
         bool opened() override;
         bool vsync() override;

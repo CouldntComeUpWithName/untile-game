@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 
 namespace utd
 {
@@ -10,15 +11,17 @@ namespace utd
 
         ref_ptr() = default;
         ref_ptr(const ref_ptr<T>&) = default;
-        ref_ptr(std::unique_ptr<T>& uptr) : m_ptr(uptr.get()) {}
+        ref_ptr(const std::unique_ptr<T>& uptr) : m_ptr(uptr.get()) {}
+        
         ref_ptr(T& _ref)
         : m_ptr(&_ref)
         { }
+
         ref_ptr(ref_ptr<T>&&) = default;
         
         ref_ptr<T>& operator = (const ref_ptr<T>&) = default;
         ref_ptr<T>& operator = (ref_ptr<T>&&)      = default;
-        ref_ptr<T>& operator = (std::unique_ptr<T>& _uref)
+        ref_ptr<T>& operator = (const std::unique_ptr<T>& _uref)
         {
             m_ptr = _uref.get();
             return *this;
@@ -35,6 +38,7 @@ namespace utd
         inline T& operator*(){ return *m_ptr; }
 
         inline T* get() const { return m_ptr; }
+        inline T& ref() const { return *m_ptr; }
     public:
         T* m_ptr;
     };

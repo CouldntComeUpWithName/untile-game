@@ -8,14 +8,17 @@
 
 #define BIT(offset) (1 << offset)
 #define STR(str) #str
+#define UTD_CONCAT(x, y) x##y
 #define UTD_BIND_EVENT(fn) [this](auto&&... args) -> decltype(auto) {return this->fn(std::forward<decltype(args)>(args)...);}
 
 #if UTD_CONFIG_DEBUG
-	#if defined(WIN32)
+	#if defined(WIN32) || defined(WIN64)
 		#define UTD_DEBUGBREAK() __debugbreak()
 	#else
 		#define UTD_DEBUGBREAK() std::terminate()
 	#endif
+#else 
+	#define UTD_DEBUGBREAK()
 #endif
 
 namespace utd
@@ -28,9 +31,10 @@ namespace utd
 	using i16  = short int;
 	using u8   = unsigned char;
 	using i8   = char;
-    using f128 = long double;
+	using f128 = long double;
 	
-	using byte  = u8;
+	using byte  = i8;
+	using ubyte = u8;
 	using word  = u16;
 	using dword = u32;
 	

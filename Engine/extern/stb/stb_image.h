@@ -136,7 +136,8 @@ RECENT REVISION HISTORY:
 //    - no JPEGs with arithmetic coding
 //    - GIF always returns *comp=4
 //
-// Basic usage (see HDR discussion below for HDR usage):
+// Basic 
+// (see HDR discussion below for HDR usage):
 //    int x,y,n;
 //    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
 //    // ... process data if not NULL ...
@@ -4080,7 +4081,7 @@ static int stbi__jpeg_info(stbi__context *s, int *x, int *y, int *comp)
 
 // public domain zlib decode    v0.2  Sean Barrett 2006-11-18
 //    simple implementation
-//      - all input must be provided in an upfront buffer
+//      - all input must be provided in an upm_front buffer
 //      - all output is written to a single output buffer (can malloc/realloc)
 //    performance
 //      - fast huffman

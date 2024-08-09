@@ -1,5 +1,4 @@
 #include <upch.h>
-
 #include "time.h"
 
 utd::time& utd::time::operator = (nanoseconds_t time_point) noexcept
@@ -8,7 +7,7 @@ utd::time& utd::time::operator = (nanoseconds_t time_point) noexcept
     return *this;
 }
 
-utd::time& utd::operator-=(time& lhs, const time& rhs) noexcept
+utd::time& utd::operator-=(time& lhs, const time rhs) noexcept
 {
 	lhs.m_time -= rhs.m_time;
 
@@ -71,12 +70,12 @@ utd::time& utd::operator%=(time& lhs, utd::time::nanoseconds_t value)
 
 utd::time& utd::operator*=(time& lhs, float value) noexcept
 {
-	lhs.m_time *= value;
+	lhs.m_time = static_cast<time::nanoseconds_t>(lhs.m_time * value);
 	return lhs;
 }
 
 utd::time& utd::operator/=(time& lhs, float value)
 {
-	lhs.m_time /= value;
+	lhs.m_time = static_cast<time::nanoseconds_t>(lhs.m_time / value);
 	return lhs;
 }

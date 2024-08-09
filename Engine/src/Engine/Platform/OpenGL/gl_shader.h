@@ -1,6 +1,6 @@
 #pragma once
 #include <Engine/Core/Base.h>
-#include <Engine/Render/shader.h>
+#include <Engine/Graphics/shader.h>
 
 namespace utd
 {

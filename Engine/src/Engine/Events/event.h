@@ -4,6 +4,8 @@
 
 #include <string>
 
+#define UTD_BIND_EVENT(fn) [this](auto&&... args) -> decltype(auto) {return this->fn(std::forward<decltype(args)>(args)...);}
+
 #define UTD_EVENT_TYPE(TYPE) static type static_type(){ return TYPE; }                 \
                              type get_type() const override { return static_type(); }  \
                              std::string debug_type() const override { return #TYPE; } \

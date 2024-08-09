@@ -13,7 +13,7 @@
 utd::camera::camera(const glm::vec3 &start_position, const glm::mat4 &projection)
     : m_position(start_position), m_projection(projection),
     m_view(glm::lookAt(m_position, m_position + m_front, m_up)),
-    m_speed(5.f), m_pitch(90.f), m_yaw(-90.f)
+    m_speed(5.f), m_pitch(90.f), m_yaw(0.f), m_fov(45.f), m_rotation(0.f)
 { 
     m_current_mouse_x = 0;
     m_current_mouse_y = 0;

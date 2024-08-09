@@ -1,6 +1,7 @@
 #include <upch.h>
 #include "clock.h"
 
+#include <chrono>
 
 utd::clock::clock()
 : m_start_point(std::chrono::steady_clock::now().time_since_epoch().count())

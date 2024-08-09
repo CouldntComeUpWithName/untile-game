@@ -36,8 +36,10 @@ namespace utd
         void on_event(event&);
         void on_update(float dt);
         
+        bool mouse_move(mouse_moved_event& moved_event);
+
     private:
-        void _update_projection();
+        void _update_vectors();
 
     public:
         
@@ -52,15 +54,15 @@ namespace utd
         glm::mat4            m_view;
         glm::mat4 m_view_projection;
         
-        float m_speed = 5.f;
-        float m_rotation = 0.f;
-        float m_fov = 45.f;
+        float m_speed;
+        float m_rotation;
+        float m_fov;
 
         float m_current_mouse_x;
         float m_current_mouse_y;
         
-        float m_yaw = 0.f;
-        float m_pitch = -90.0f;
+        float m_yaw;
+        float m_pitch;
 
         float m_camera_sensitivity = 1.f;
     };

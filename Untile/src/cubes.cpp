@@ -125,7 +125,7 @@ void cubes::on_update(float dt)
     }
 
     m_texture_shader->bind();
-    m_camera.projection(glm::perspective(glm::radians(m_camera.m_fov), 16 / 9.f, 0.1f, 100.f));
+    m_camera.projection(glm::perspective(glm::radians(m_camera.m_fov), 16 / 9.f, 0.1f, 1000.f));
     m_texture_shader->set_mat4("projection", m_camera.projection());
     
     if(cursor_hidden)
@@ -143,7 +143,6 @@ void cubes::on_update(float dt)
 
 void cubes::on_event(utd::event& event)
 {
-    //utd::event_dispatcher::dispatch<utd::key_pressed_event>()
     m_camera.on_event(event);
 }
 

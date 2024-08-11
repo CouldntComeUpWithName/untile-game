@@ -11,57 +11,53 @@
 void utd::gl_shader::bind()
 {
 	UTD_PROFILE_FUNC();
-	
 	glUseProgram(get_id());
 }
 
 void utd::gl_shader::unbind()
 {
 	UTD_PROFILE_FUNC();
-
 	glUseProgram(false);
 }
 
-void utd::gl_shader::set_int(const std::string_view name, int value)
+void utd::gl_shader::scalar(const std::string_view name, int value)
 {
 	UTD_PROFILE_FUNC();
-
 	glUniform1i(glGetUniformLocation(get_id(), name.data()), value);
 }
 
-void utd::gl_shader::set_array(const std::string_view name, int* values, u32 count)
+void utd::gl_shader::array(const std::string_view name, int* values, u32 count)
 {
 	UTD_PROFILE_FUNC();
-
 	glUniform1iv(glGetUniformLocation(get_id(), name.data()), count, values);
 }
 
-void utd::gl_shader::set_float(const std::string_view name, float value)
+void utd::gl_shader::real(const std::string_view name, float value)
 {
 	UTD_PROFILE_FUNC();
 
 	glUniform1f(glGetUniformLocation(get_id(), name.data()), value);
 }
 
-void utd::gl_shader::set_float2(const std::string_view name, const glm::vec2& value)
+void utd::gl_shader::vec2(const std::string_view name, const glm::vec2& value)
 {
 	UTD_PROFILE_FUNC();
 	glUniform2f(glGetUniformLocation(get_id(), name.data()), value.x, value.y);
 }
 
-void utd::gl_shader::set_float3(const std::string_view name, const glm::vec3& value)
+void utd::gl_shader::vec3(const std::string_view name, const glm::vec3& value)
 {
 	UTD_PROFILE_FUNC();
 	glUniform3f(glGetUniformLocation(get_id(), name.data()), value.x, value.y, value.z);
 }
 
-void utd::gl_shader::set_float4(const std::string_view name, const glm::vec4& value)
+void utd::gl_shader::vec4(const std::string_view name, const glm::vec4& value)
 {
 	UTD_PROFILE_FUNC();
 	glUniform4f(glGetUniformLocation(get_id(), name.data()), value.x, value.y, value.z, value.w);
 }
 
-void utd::gl_shader::set_mat4(const std::string_view name, const glm::mat4& matrix)
+void utd::gl_shader::mat4(const std::string_view name, const glm::mat4& matrix)
 {
 	UTD_PROFILE_FUNC();
 	glUniformMatrix4fv(glGetUniformLocation(get_id(), name.data()), 1, GL_FALSE, glm::value_ptr(matrix));
@@ -81,8 +77,8 @@ void utd::gl_shader::source(const std::string& vert_source, const std::string& f
 	u32 vertex, fragment;
 	int success;
 
-	const char* vert = vert_source.c_str();
-	const char* frag = frag_source.c_str();
+	cstring vert = vert_source.c_str();
+	cstring frag = frag_source.c_str();
 
 	vertex = glCreateShader(GL_VERTEX_SHADER);
 
@@ -155,17 +151,6 @@ std::string read_file(const std::string& filepath, std::ios_base::openmode mode)
 	return "";
 }
 
-std::string read_file1(const std::string& filepath)
-{
-	std::ifstream vShaderFile;
-	std::stringstream sstream;
-	vShaderFile.open(filepath);
-
-	sstream << vShaderFile.rdbuf();
-	
-	return sstream.str();
-}
-
 void utd::gl_shader::filepath(const std::string& vert_path, const std::string& frag_path)
 {
 	UTD_PROFILE_FUNC(profile::color::deeprose);
@@ -173,14 +158,11 @@ void utd::gl_shader::filepath(const std::string& vert_path, const std::string& f
 	std::string vert_source = read_file(vert_path, std::ios::in | std::ios::binary);
 	std::string frag_source = read_file(frag_path, std::ios::in | std::ios::binary);
 
-	/*std::string vert_source = read_file1(vert_path);
-	std::string frag_source = read_file1(frag_path);*/
-
 	u32 vertex, fragment;
 	int success;
 
-	auto* vert = vert_source.c_str();
-	auto* frag = frag_source.c_str();
+	cstring vert = vert_source.c_str();
+	cstring frag = frag_source.c_str();
 
 	vertex = glCreateShader(GL_VERTEX_SHADER);
 

@@ -283,7 +283,7 @@ void utd::triangle_layer::on_update(float dt)
     
     m_shader->bind();
     UTD_PROFILE_SCOPE(UTD_CONCAT(__FUNCTION__, " shader values setting"), profile::color::lightred);
-    m_shader->set_float4("triangle_color", color);
-    m_shader->set_float("offset", accumulator);
+    m_shader->vec4("triangle_color", color);
+    m_shader->real("offset", accumulator);
 
 }

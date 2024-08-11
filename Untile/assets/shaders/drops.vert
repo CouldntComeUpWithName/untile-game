@@ -1,16 +1,3 @@
-#version 450 core
-out vec4 FragColor;
-
-in vec4 ourColor;
-in vec2 TexCoord;
-
-in float iTime;
-uniform sampler2D iChannel0;
-in vec2 iResolution;
-in vec2 iMouse;
-// texture sampler
-uniform sampler2D texture1;
-
 #define MAX_RADIUS 2
 
 // Set to 1 to hash twice. Slower, but less patterns.
@@ -73,10 +60,4 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 n = vec3(circles, sqrt(1. - dot(circles, circles)));
     vec3 color = texture(iChannel0, uv/resolution - intensity*n.xy).rgb + 5.*pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
 	fragColor = vec4(color, 1.0);
-}
-
-void main()
-{
-	FragColor = texture(texture1, TexCoord); //* vec4(ourColor);
-	// mainImage(FragColor, TexCoord);
 }

@@ -7,8 +7,8 @@ namespace utd
     class ref_ptr
     {
         static_assert(std::is_default_constructible_v<T>, "T must have a default constructor");
+    
     public:
-
         ref_ptr() = default;
         ref_ptr(const ref_ptr<T>&) = default;
         ref_ptr(const std::unique_ptr<T>& uptr) : m_ptr(uptr.get()) {}
@@ -39,6 +39,7 @@ namespace utd
 
         inline T* get() const { return m_ptr; }
         inline T& ref() const { return *m_ptr; }
+        
     public:
         T* m_ptr;
     };

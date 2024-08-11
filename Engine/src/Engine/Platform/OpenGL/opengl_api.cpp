@@ -42,5 +42,8 @@ void utd::opengl_api::draw_arrays(const vertex_array& vertex_array, u32 first, u
 
 void utd::opengl_api::depth_buffer(bool enabled)
 {
-    glEnable(GL_DEPTH_TEST);
+    if (enabled)
+        glEnable(GL_DEPTH_TEST);
+    else
+        glDisable(GL_DEPTH_TEST);
 }

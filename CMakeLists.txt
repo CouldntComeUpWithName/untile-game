@@ -30,10 +30,6 @@ add_compile_definitions($<$<CONFIG:Release>:UTD_CONFIG_RELEASE>)
 add_compile_definitions($<$<CONFIG:Profile>:UTD_PROFILING_ENABLE>)
 add_compile_definitions($<$<OR:$<CONFIG:Release>,$<CONFIG:Debug>>:UTD_LOGGING_ENABLE>)
 
-if(MSVC)
-    add_compile_definitions(UTD_MSVC)
-endif()
-
 # add_compile_definitions($<$<CONFIG:Profile>>:UTD_PROFILING_ENABLE>)
 
 # CMake modules
@@ -53,6 +49,11 @@ add_subdirectory(Engine)
 add_subdirectory(Untile)
 
 if(MSVC)
+    add_compile_definitions(UTD_MSVC)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Untile)
+endif()
+
+if(WIN32)
+    add_compile_definitions(UTD_WINDOWS)
 endif()
 

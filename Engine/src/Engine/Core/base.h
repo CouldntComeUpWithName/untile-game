@@ -12,7 +12,7 @@
 #define UTD_BIND_EVENT(fn) [this](auto&&... args) -> decltype(auto) {return this->fn(std::forward<decltype(args)>(args)...);}
 
 #if UTD_CONFIG_DEBUG
-	#if defined(WIN32) || defined(WIN64)
+	#if UTD_WINDOWS
 		#define UTD_DEBUGBREAK() __debugbreak()
 	#else
 		#define UTD_DEBUGBREAK() std::terminate()

@@ -21,7 +21,7 @@ public:
     void on_update(float) override;
     void on_event(utd::event&) override;
 
-     ~cubes();
+    ~cubes();
 private:
 
 private:
@@ -30,8 +30,14 @@ private:
     utd::vertex_array m_vertex_array;
     std::uptr<utd::texture> m_cobblestone;
     std::uptr<utd::shader> m_texture_shader;
-    utd::camera m_camera;
+    utd::multi_camera m_camera;
+    
+    glm::vec3 m_front = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 m_up = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 m_right;
 
+    float m_yaw   = 45.f;
+    float m_pitch = 89.f;
 
     glm::vec3 cubePositions[10] = {
         glm::vec3(0.0f, 0.0f, 0.0f),
@@ -45,6 +51,5 @@ private:
         glm::vec3(1.5f, 0.2f, -1.5f),
         glm::vec3(-1.3f, 1.0f, -1.5f)
     };
-
 
 };

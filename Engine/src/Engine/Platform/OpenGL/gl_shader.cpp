@@ -20,7 +20,7 @@ void utd::gl_shader::unbind()
 	glUseProgram(false);
 }
 
-void utd::gl_shader::scalar(const std::string_view name, int value)
+void utd::gl_shader::integer(const std::string_view name, int value)
 {
 	UTD_PROFILE_FUNC();
 	glUniform1i(glGetUniformLocation(get_id(), name.data()), value);

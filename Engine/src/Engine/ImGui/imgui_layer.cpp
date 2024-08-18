@@ -77,9 +77,10 @@ void utd::imgui_layer::on_event(event& event)
 
 void utd::imgui_layer::begin() const
 {
+#if !defined(UTD_CONFIG_SHIP) && UTD_IMGUI_DISABLE == 0
+
     UTD_PROFILE_FUNC(profile::color::lightcyan);
 
-#if !defined(UTD_CONFIG_SHIP) && UTD_IMGUI_DISABLE == 0
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     UTD_PROFILE_BEGIN("ImGui::NewFrame")
@@ -268,7 +269,7 @@ void utd::triangle_layer::on_render()
 
     if(visible)
     {
-        utd::renderer::draw_indexed(m_vertex_array, 6);
+        utd::renderer::command::draw_indexed(m_vertex_array, 6);
         /*glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);*/
     }

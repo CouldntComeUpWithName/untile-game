@@ -55,17 +55,17 @@ namespace utd
         {
             switch (type)
             {
-            case data_type::BOOL:   return sizeof(bool);
-            case data_type::FLOAT:  return sizeof(float);
-            case data_type::FLOAT2: return sizeof(float) * 2;
-            case data_type::FLOAT3: return sizeof(float) * 3;
-            case data_type::FLOAT4: return sizeof(float) * 4;
-            case data_type::INT:    return sizeof(int);
-            case data_type::INT2:   return sizeof(int) * 2;
-            case data_type::INT3:   return sizeof(int) * 3;
-            case data_type::INT4:   return sizeof(int) * 4;
-            case data_type::MAT3:   return sizeof(float) * 3 * 3;
-            case data_type::MAT4:   return sizeof(float) * 4 * 4;
+            case datatype::BOOL:   return sizeof(bool);
+            case datatype::FLOAT:  return sizeof(float);
+            case datatype::FLOAT2: return sizeof(float) * 2;
+            case datatype::FLOAT3: return sizeof(float) * 3;
+            case datatype::FLOAT4: return sizeof(float) * 4;
+            case datatype::INT:    return sizeof(int);
+            case datatype::INT2:   return sizeof(int) * 2;
+            case datatype::INT3:   return sizeof(int) * 3;
+            case datatype::INT4:   return sizeof(int) * 4;
+            case datatype::MAT3:   return sizeof(float) * 3 * 3;
+            case datatype::MAT4:   return sizeof(float) * 4 * 4;
 
             }
 
@@ -98,7 +98,7 @@ namespace utd
         virtual void filepath(const std::string&, const std::string&) = 0;
 
         inline id get_id(){ return m_id; }
-        
+
     public:
         static std::uptr<shader> create(const std::string& vertex, const std::string& fragment);
         static std::uptr<shader> create(const std::string& source);

@@ -78,8 +78,8 @@ void utd::application::run()
     {
         auto dt = clock.restart().sec();
 
-        renderer::set_clear_color(glm::vec4{ 0.2f, 0.3f, 0.3f, 1.0f });
-        renderer::clear();
+        renderer::command::clear_color(glm::vec4{ 0.2f, 0.3f, 0.3f, 1.0f });
+        renderer::command::clear();
 
         UTD_PROFILE_BEGIN("Layer Drawing time", tracy::Color::Orange);
         
@@ -124,7 +124,7 @@ void utd::application::on_event(event& event)
         layer->on_event(event);
     }
 
-    UTD_ENGINE_INFO(event.str());
+    //UTD_ENGINE_INFO(event.str());
 }
 
 void utd::triangle()

@@ -97,7 +97,7 @@ namespace utd
         #define UTD_PROFILE_SCOPE(name, ...) static const tracy::SourceLocationData TracyConcat(__tracy_source_location,UTD_LINE) { name, UTD_FUNCTION,  UTD_FILE, (uint32_t)UTD_LINE, int{__VA_ARGS__} }; tracy::ScopedZone varname( &TracyConcat(__tracy_source_location,__LINE__), true )
     #else
         #define UTD_GET_RESPECTIVE_MACRO(name, color, macro, ...) macro
-        #define UTD_PROFILE_SCOPE(name, ...) UTD_GET_RESPECTIVE(name, __VA_ARGS__, ZoneScopedNC, ZoneScopedN)(name, __VA_ARGS__)
+        #define UTD_PROFILE_SCOPE(name, ...) UTD_GET_RESPECTIVE_MACRO(name, __VA_ARGS__, ZoneScopedNC, ZoneScopedN)(name, __VA_ARGS__)
     #endif
 
     #define UTD_PROFILE_FUNC(...) UTD_PROFILE_SCOPE(__FUNCTION__, __VA_ARGS__)

@@ -35,7 +35,7 @@ namespace utd
         virtual u32 height() const       = 0;
         virtual glm::vec2 size() const   = 0;
         
-        virtual void bind() = 0;
+        virtual void bind(u32 slot = 0) = 0;
 
         virtual const std::string& path() const = 0;
 

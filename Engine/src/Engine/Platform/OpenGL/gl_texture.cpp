@@ -91,9 +91,9 @@ bool utd::gl_texture::operator==(const texture& other) const
     return m_id == other.get_id();
 }
 
-void utd::gl_texture::bind()
+void utd::gl_texture::bind(u32 slot)
 {
-    glBindTexture(GL_TEXTURE_2D, m_id);
+    glBindTextureUnit(slot, m_id);
 }
 
 

@@ -16,7 +16,7 @@ namespace utd
 
         void unbind() override;
 
-        void scalar(const std::string_view name, int value) override;
+        void integer(const std::string_view name, int value) override;
 
         void array(const std::string_view name, int* values, u32 count) override;
         void real(const std::string_view name, float value)             override;

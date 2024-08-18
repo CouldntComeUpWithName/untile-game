@@ -23,7 +23,7 @@ namespace utd
         bool is_loaded() const override;
         bool operator==(const texture& other) const override;
 
-        void bind() override;
+        void bind(u32 slot) override;
         
     private:
         bool m_loaded;

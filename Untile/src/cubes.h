@@ -7,7 +7,7 @@
 #include <Engine/Graphics/camera.h>
 
 #include <glm/glm.hpp>
-
+#include <Engine/Scene/components.h>
 class utd::event;
 class utd::shader;
 
@@ -29,12 +29,19 @@ private:
     bool cursor_hidden = false;
     utd::vertex_array m_vertex_array;
     std::uptr<utd::texture> m_cobblestone;
+    std::uptr<utd::texture> m_grass;
+    std::uptr<utd::texture> m_sand;
     std::uptr<utd::shader> m_texture_shader;
+
     utd::multi_camera m_camera;
-    
+    utd::ref_ptr<utd::texture> texture_map[3];
+
     glm::vec3 m_front = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 m_up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 m_right;
+    
+    utd::sprite m_sprite;
+    utd::sprite m_sprite1;
 
     float m_yaw   = 45.f;
     float m_pitch = 89.f;

@@ -206,6 +206,12 @@ void utd::multi_camera::orthographic_near(float _near)
     _update_orthographic();
 }
 
+void utd::multi_camera::position(const glm::vec3& pos)
+{
+    m_position = pos; 
+    _update_projection_specific();
+}
+
 inline void utd::multi_camera::_update_perspective()
 {
     UTD_PROFILE_FUNC();

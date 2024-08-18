@@ -35,7 +35,7 @@ namespace utd
 
         const glm::mat4& view_projection() const {return m_view_projection; }
         void view_projection(glm::mat4& vp) { m_view_projection = vp; }
-
+  
     private:
         void _update_projection();
         void       _update_view();
@@ -68,7 +68,7 @@ namespace utd
 
     public:
         // temp 
-        void position(const glm::vec3& pos) { m_position = pos; _update_projection_specific(); }
+        void position(const glm::vec3& pos);
         const auto& position() const { return m_position; };
         
         void perspective(float _fov, float _near, float _far);

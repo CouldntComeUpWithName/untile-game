@@ -7,36 +7,17 @@
 
 #include <glm/glm.hpp>
 
+namespace std::filesystem
+{
+    class path;
+} /* namespace std::filesystem */
+
 namespace utd
 {
     class shader
     {
     public:
-        typedef enum class data_type
-        {
-            /* UNKNOWN */
-            UNDEFINED = 0,
-            
-            /* BOOLEAN */
-            BOOL      = 1,
-
-            /* FLOATING_POINT */
-            FLOAT     = 5, 
-            FLOAT2    = 6, 
-            FLOAT3    = 7, 
-            FLOAT4    = 8, 
-            
-            /* INTEGER */
-            INT       = 9, 
-            INT2      = 10, 
-            INT3      = 11,
-            INT4      = 12, 
-            
-            /* MATRIX */
-            MAT3      = 15, 
-            MAT4      = 16
-        } datatype;
-
+        
         enum base_type
         {
             UNKNOWN        = 0,
@@ -46,6 +27,33 @@ namespace utd
             MATRIX         = 4,
             COUNT          = 5
         };
+
+        typedef enum class data_type
+        {
+            /* base_type::UNKNOWN */
+            UNDEFINED = 0,
+            
+            /* base_type::BOOLEAN */
+            BOOL      = 1,
+
+            /* base_type::FLOATING_POINT */
+            FLOAT     = 5, 
+            FLOAT2    = 6, 
+            FLOAT3    = 7, 
+            FLOAT4    = 8, 
+            
+            /* base_type::INTEGER */
+            INT       = 9, 
+            INT2      = 10, 
+            INT3      = 11,
+            INT4      = 12, 
+            
+            /* base_type::MATRIX */
+            MAT3      = 15, 
+            MAT4      = 16
+        } datatype;
+
+
 
         //TODO: maybe a better name
         static constexpr int BASE_TYPE_MAX_SIZE = sizeof(int) | sizeof(float);
@@ -95,6 +103,7 @@ namespace utd
         virtual void filepath(const std::string&) = 0;
 
         virtual void source(const std::string&, const std::string&)   = 0;
+        
         virtual void filepath(const std::string&, const std::string&) = 0;
 
         inline id get_id(){ return m_id; }
@@ -110,9 +119,28 @@ namespace utd
         id m_id;
     };
 
-    class shader_compiler : utility
+    class shader_compiler
     {
+    public:
 
+    public:
+        shader_compiler() = default;
+        shader_compiler(const std::string& vertex_src, const std::string& fragment_src);
+
+        //void filepath(std::filesystem::path& vertex_path, std::filesystem::path& fragment_path);
+        void source(const std::string& vertex_src, const std::string& fragment_src);
+        
+        virtual shader::id build() = 0;
+        virtual void compile()     = 0;
+        virtual void link()        = 0;
+    private:
+        shader::id m_program_id = -1;
+        
+        u32 m_vertex_module_id;
+        u32 m_fragment_module_id;
+        
+        std::string m_vertex_source;
+        std::string m_fragment_source;
     };
 
 } /* namespace utd */

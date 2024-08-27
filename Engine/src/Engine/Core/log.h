@@ -28,9 +28,14 @@ namespace utd
 /* Engine */
 #define UTD_ENGINE_INFO(...) ::utd::logging::get_engine_logger()->info(__VA_ARGS__)
 #define UTD_ENGINE_WARN(...) ::utd::logging::get_engine_logger()->warn(__VA_ARGS__)
-#define UTD_ENGINE_DEBUG(...) ::utd::logging::get_engine_logger()->debug(__VA_ARGS__)
 #define UTD_ENGINE_ERROR(...) ::utd::logging::get_engine_logger()->error(__VA_ARGS__)
 #define UTD_ENGINE_FATAL(...) ::utd::logging::get_engine_logger()->critical(__VA_ARGS__)
+
+#if UTD_CONFIG_DEBUG
+    #define UTD_ENGINE_DEBUG(...) ::utd::logging::get_engine_logger()->info(__VA_ARGS__)
+#else
+    #define UTD_ENGINE_DEBUG(...)
+#endif
 
 /* Client */
 #define UTD_INFO(...) ::utd::logging::get_client_logger()->info(__VA_ARGS__)

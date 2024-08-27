@@ -32,7 +32,7 @@ private:
     std::uptr<utd::texture> m_grass;
     std::uptr<utd::texture> m_sand;
     std::uptr<utd::shader> m_texture_shader;
-
+    utd::editor_camera m_editor_camera;
     utd::multi_camera m_camera;
     utd::ref_ptr<utd::texture> texture_map[3];
 
@@ -40,8 +40,7 @@ private:
     glm::vec3 m_up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 m_right;
     
-    utd::sprite m_sprite;
-    utd::sprite m_sprite1;
+    utd::sprite m_sprites[100][100];
 
     float m_yaw   = 45.f;
     float m_pitch = 89.f;
@@ -58,5 +57,8 @@ private:
         glm::vec3(1.5f, 0.2f, -1.5f),
         glm::vec3(-1.3f, 1.0f, -1.5f)
     };
+
+
+    
 
 };

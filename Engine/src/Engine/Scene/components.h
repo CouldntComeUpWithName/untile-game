@@ -19,8 +19,8 @@ namespace utd
 
     struct sprite
     {
+        ref_ptr<texture> texture = nullptr;
         glm::vec4 color = {0.f, 0.f, 0.f, 1.f};
-        ref_ptr<texture> texture;
         float tiling_count = 1.f;
     };
 

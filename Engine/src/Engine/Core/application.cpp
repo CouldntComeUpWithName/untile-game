@@ -13,7 +13,7 @@
 #include <Engine/Core/Input.h>
 
 #include <Engine/Events/application_event.h>
-#include <Engine/Core/System/clock.h>
+#include <Platform/Common/System/clock.h>
 
 #include <Engine/Graphics/Renderer.h>
 #include <Engine/Graphics/Shader.h>
@@ -25,7 +25,7 @@
 #include <Engine/Graphics/vertex_attrib.h>
 
 #include <Engine/Profiling/Profile.h>
-
+    
 utd::application::application(const cmdline_args &)
     : m_running(true)
 { 
@@ -40,8 +40,7 @@ utd::application::application(const cmdline_args &)
     renderer::init();
     
     push_overlay(new imgui_layer());
-    push_overlay(new demo());
-
+    //push_overlay(new demo());
 }
 
 void utd::application::push_layer(layer *layer)
@@ -74,11 +73,11 @@ void utd::application::run()
     m_window->vsync(false);
 
     utd::clock clock;
+    renderer::command::clear_color(glm::vec4{ 0.2f, 0.3f, 0.3f, 1.0f });
     while (m_running)
     {
         auto dt = clock.restart().sec();
 
-        renderer::command::clear_color(glm::vec4{ 0.2f, 0.3f, 0.3f, 1.0f });
         renderer::command::clear();
 
         UTD_PROFILE_BEGIN("Layer Drawing time", tracy::Color::Orange);

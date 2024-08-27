@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <Engine/Core/Log.h>
+#include <Engine/Core/Assert.h>
 #include <Engine/Profiling/Profile.h>
 
 void utd::gl_shader::bind()
@@ -23,44 +24,82 @@ void utd::gl_shader::unbind()
 void utd::gl_shader::integer(const std::string_view name, int value)
 {
 	UTD_PROFILE_FUNC();
-	glUniform1i(glGetUniformLocation(get_id(), name.data()), value);
+
+	auto location = glGetUniformLocation(get_id(), name.data());
+
+	UTD_ENGINE_ASSERT(location != -1, "The uniform location doesn\'t exist!");
+
+	glUniform1i(location, value);
 }
 
 void utd::gl_shader::array(const std::string_view name, int* values, u32 count)
 {
 	UTD_PROFILE_FUNC();
-	glUniform1iv(glGetUniformLocation(get_id(), name.data()), count, values);
+	
+	auto location = glGetUniformLocation(get_id(), name.data());
+
+	UTD_ENGINE_ASSERT(location != -1, "The uniform location doesn\'t exist!");
+
+	glUniform1iv(location, count, values);
 }
 
 void utd::gl_shader::real(const std::string_view name, float value)
 {
 	UTD_PROFILE_FUNC();
 
-	glUniform1f(glGetUniformLocation(get_id(), name.data()), value);
+	auto location = glGetUniformLocation(get_id(), name.data());
+
+	UTD_ENGINE_ASSERT(location != -1, "The uniform location doesn\'t exist!");
+
+
+	glUniform1f(location, value);
 }
 
 void utd::gl_shader::vec2(const std::string_view name, const glm::vec2& value)
 {
 	UTD_PROFILE_FUNC();
-	glUniform2f(glGetUniformLocation(get_id(), name.data()), value.x, value.y);
+
+	auto location = glGetUniformLocation(get_id(), name.data());
+
+	UTD_ENGINE_ASSERT(location != -1, "The uniform location doesn\'t exist!");
+
+
+	glUniform2f(location, value.x, value.y);
 }
 
 void utd::gl_shader::vec3(const std::string_view name, const glm::vec3& value)
 {
 	UTD_PROFILE_FUNC();
-	glUniform3f(glGetUniformLocation(get_id(), name.data()), value.x, value.y, value.z);
+
+	auto location = glGetUniformLocation(get_id(), name.data());
+
+	UTD_ENGINE_ASSERT(location != -1, "The uniform location doesn\'t exist!");
+
+
+	glUniform3f(location, value.x, value.y, value.z);
 }
 
 void utd::gl_shader::vec4(const std::string_view name, const glm::vec4& value)
 {
 	UTD_PROFILE_FUNC();
-	glUniform4f(glGetUniformLocation(get_id(), name.data()), value.x, value.y, value.z, value.w);
+
+	auto location = glGetUniformLocation(get_id(), name.data());
+
+	UTD_ENGINE_ASSERT(location != -1, "The uniform location doesn\'t exist!");
+
+
+	glUniform4f(location, value.x, value.y, value.z, value.w);
 }
 
 void utd::gl_shader::mat4(const std::string_view name, const glm::mat4& matrix)
 {
 	UTD_PROFILE_FUNC();
-	glUniformMatrix4fv(glGetUniformLocation(get_id(), name.data()), 1, GL_FALSE, glm::value_ptr(matrix));
+	
+	auto location = glGetUniformLocation(get_id(), name.data());
+	
+	UTD_ENGINE_ASSERT(location != -1, "The uniform location doesn\'t exist!");
+	
+	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 void utd::gl_shader::source(const std::string& source_glsl)
@@ -154,7 +193,7 @@ std::string read_file(const std::string& filepath, std::ios_base::openmode mode)
 void utd::gl_shader::filepath(const std::string& vert_path, const std::string& frag_path)
 {
 	UTD_PROFILE_FUNC(profile::color::deeprose);
-
+	 
 	std::string vert_source = read_file(vert_path, std::ios::in | std::ios::binary);
 	std::string frag_source = read_file(frag_path, std::ios::in | std::ios::binary);
 

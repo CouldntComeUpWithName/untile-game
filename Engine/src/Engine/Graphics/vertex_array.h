@@ -58,16 +58,17 @@ namespace utd
         std::vector<std::uptr<vertex_buffer>> m_array;
         std::uptr<index_buffer> m_index_buffer;
         u32 m_current_attrib_index = 0;
-        u32 m_id;
+        u32 m_id = 0;
     };
 
     template<typename ...t_ctor_params>
     inline void vertex_array::make_index_buffer(t_ctor_params&& ...params)
     {
+        bind();
         m_index_buffer = std::make_unique<index_buffer>(std::forward<t_ctor_params>(params)...);
         m_index_buffer->bind();
     }
-
+    //doesn't work atm
     template<typename ...t_ctor_params>
     inline vertex_buffer& vertex_array::emplace_back(t_ctor_params&&... params)
     {
@@ -76,7 +77,6 @@ namespace utd
         auto& vbo_ref = *vbo.get();
 
         m_array.emplace_back(std::move(vbo));
-        
         
         this->bind();
         vbo_ref.bind();
@@ -87,8 +87,6 @@ namespace utd
             _set_vertex_attribute_pointer(attribute);
         }
         
-        
-
         return vbo_ref;
     }
 

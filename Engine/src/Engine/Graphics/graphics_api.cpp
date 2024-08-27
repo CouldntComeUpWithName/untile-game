@@ -1,7 +1,7 @@
 #include <upch.h>
 #include "graphics_api.h"
 
-#include <Engine/Platform/OpenGL/opengl_api.h>
+#include <Platform/OpenGL/opengl_api.h>
 #include <Engine/Core/assert.h>
 
 std::uptr<utd::graphics_api> utd::graphics_api::create(utd::graphics_api::type _API)

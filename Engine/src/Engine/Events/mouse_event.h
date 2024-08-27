@@ -62,4 +62,24 @@ namespace utd
     private:
     };
 
+    class mouse_scrolled_event : public event
+    {
+    public:
+        mouse_scrolled_event(const float offset_x, const float offset_y)
+            : m_offset_x(offset_x), m_offset_y(offset_y)
+        { }
+        
+        UTD_EVENT_TYPE(event::type::MOUSE_SCROLLED);
+
+        float offset_x() { return m_offset_x; }
+        float offset_y() { return m_offset_y; }
+        virtual category_t get_category() const override { return event::category::MOUSE; }
+        std::string str() const override
+        {
+            return debug_type();
+        }
+    private:
+        float m_offset_x, m_offset_y;
+    };
+
 } /* namespace utd */

@@ -37,9 +37,9 @@ void utd::renderer::command::draw_indexed(const utd::vertex_array& vertex_array,
     s_graphics_api->draw_indexed(vertex_array, count);
 }
 
-void utd::renderer::command::draw_indexed(const utd::ref_ptr<utd::vertex_array> vertex_array, u32 count)
+void utd::renderer::command::draw_indexed(const std::uptr<utd::vertex_array>& vertex_array, u32 count)
 {
-    s_graphics_api->draw_indexed(vertex_array.ref(), count);
+    s_graphics_api->draw_indexed(*vertex_array.get(), count);
 }
 
 void utd::renderer::command::draw_arrays(const vertex_array& vertex_array, u32 first, u32 count)

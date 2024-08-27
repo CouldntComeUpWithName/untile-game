@@ -18,7 +18,7 @@ namespace utd
             static void line_width(float);
             static void clear_color(const glm::vec4&);
             static void clear();
-            static void draw_indexed(const ref_ptr<vertex_array> vertex_array, u32 count);
+            static void draw_indexed(const std::uptr<utd::vertex_array>& vertex_array, u32 count);
             static void draw_indexed(const vertex_array& vertex_array, u32 count);
             
             static void draw_line(const vertex_array& vertex_array, u32 count);
@@ -27,7 +27,7 @@ namespace utd
         };
 
         static inline graphics_api::type API() { return s_api_type; };
-        static void send(const vertex_array& vertex_array, const shader& shader /* TODO: to be expanded */);
+        static void submit(const vertex_array& vertex_array, const shader& shader /* TODO: to be expanded and implemented */);
     private:
         static graphics_api::type s_api_type;
         static std::uptr<graphics_api> s_graphics_api;

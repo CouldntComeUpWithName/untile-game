@@ -1,9 +1,11 @@
 #pragma once
 
 #include <Engine/Core/Base.h>
+#include <glm/glm.hpp>
 
 struct stats
 {
+    int draw_calls = 0;
     int quad_drawn_count = 0;
 };
 
@@ -17,6 +19,8 @@ namespace utd
     struct sprite;
     class render_string;
     class multi_camera;
+    class camera;
+    class editor_camera;
 
     typedef class renderer2d : utility
     {
@@ -26,13 +30,15 @@ namespace utd
             //TODO: choose between lower case and upper one
             standard = 0,
             STANDARD = 0,
-            
+
             norotate = 1,
             NOROTATE = 1
         };
     public:
         static void init();
-        static void begin(const multi_camera& camera);
+        static void begin(const multi_camera& camera, const glm::mat4& transform = glm::mat4(1.f));
+        static void begin(const editor_camera& editor_camera);
+        static void begin(const camera& camera);
         static void end();
         
         static void draw(const rectangle& rect);

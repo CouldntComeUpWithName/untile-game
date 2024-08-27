@@ -3,6 +3,8 @@
 #include <glm/vec2.hpp>
 
 #include <Engine/Core/Base.h>
+#include <Engine/Core/Log.h>
+
 #include <string>
 namespace utd
 {
@@ -28,7 +30,10 @@ namespace utd
         };
 
     public:
-        virtual ~texture() = default;
+        virtual ~texture()
+        {
+            UTD_ENGINE_DEBUG(__FUNCTION__ " for resource ID{0} {1}", m_id, "has been called");
+        }
         texture() = default;
         virtual const specs& get_specs() = 0;
         virtual u32 width() const        = 0;
@@ -45,10 +50,11 @@ namespace utd
         virtual bool operator==(const texture& other) const = 0;
     public:
         static std::uptr<texture> load(const std::string& filepath);
+        static std::uptr<texture> create();
     private:
         // virtual void release() = 0;
     protected:
-        id m_id;
+        id m_id = 0;
     };
 
     

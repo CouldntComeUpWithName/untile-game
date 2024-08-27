@@ -4,7 +4,7 @@
 #include "log.h"
 #include "upch.h"
 
-#include "Engine/Platform/glfw_window.h"
+#include <Platform/GLFW/glfw_window.h>
 // Dear ImGui: standalone example application for GLFW + OpenGL 3, using programmable pipeline
 // (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
 

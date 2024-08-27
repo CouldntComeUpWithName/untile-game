@@ -26,8 +26,8 @@ namespace utd
         void bind(u32 slot) override;
         
     private:
-        bool m_loaded;
-        std::uptr<std::string> m_path;
-        texture::specs m_specifications;
+        bool m_loaded = false;
+        std::uptr<std::string> m_path = nullptr;
+        texture::specs m_specifications = {};
     };
 }

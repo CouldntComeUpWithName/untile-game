@@ -11,12 +11,18 @@ static inline utd::image_format enum_cast(int channels);
 utd::gl_texture::gl_texture(const specs& specifications)
     : m_specifications(specifications), m_loaded(false)
 {
+    glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
+    glTextureStorage2D(m_id, 1, GL_RGBA8, m_specifications.width, m_specifications.height); // hard coded
 
+    glTextureParameteri(m_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(m_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTextureParameteri(m_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(m_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
 utd::gl_texture::gl_texture(const std::string& path)
 {
-    
     stbi_set_flip_vertically_on_load(true);
     m_path = std::make_unique<std::string>(path);
 
@@ -26,13 +32,13 @@ utd::gl_texture::gl_texture(const std::string& path)
     UTD_ENGINE_ASSERT(data, "Can\'t load a texture from file");
     m_loaded = true;
 
-    glGenTextures(1, &m_id);
-    //glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
+    //glGenTextures(1, &m_id);
+    glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
     glBindTexture(GL_TEXTURE_2D, m_id);
     
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     
     if(channels == 4)
@@ -78,7 +84,7 @@ const std::string& utd::gl_texture::path() const
 
 void utd::gl_texture::set_data(void* data, u32 slot)
 {
-
+    glTextureSubImage2D(m_id, 0, 0, 0, m_specifications.width, m_specifications.height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 }
 
 bool utd::gl_texture::is_loaded() const

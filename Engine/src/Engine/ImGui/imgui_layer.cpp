@@ -77,7 +77,7 @@ void utd::imgui_layer::on_event(event& event)
 
 void utd::imgui_layer::begin() const
 {
-#if !defined(UTD_CONFIG_SHIP) && UTD_IMGUI_DISABLE == 0
+//#if !defined(UTD_CONFIG_SHIP) && UTD_IMGUI_DISABLE == 0
 
     UTD_PROFILE_FUNC(profile::color::lightcyan);
 
@@ -86,7 +86,8 @@ void utd::imgui_layer::begin() const
     UTD_PROFILE_BEGIN("ImGui::NewFrame")
     ImGui::NewFrame();
     UTD_PROFILE_END();
-#endif
+
+//#endif
     //ZoneNamedN(setupzone, "ImGui begin", true);
 }
 
@@ -171,7 +172,7 @@ void utd::triangle_layer::on_attach()
 
     m_shader = utd::shader::load("E:/Programming/untile/Untile/assets/shaders/triangle.vert", "E:/Programming/untile/Untile/assets/shaders/triangle.frag");
     
-    std::uptr<vertex_buffer> vb = std::make_unique<vertex_buffer>(vertices, sizeof(vertices));
+    std::uptr<vertex_buffer> vb = std::make_unique<vertex_buffer>(vertices, static_cast<u32>(sizeof(vertices)));
     vb->set_layout
     ({
         { shader::data_type::FLOAT3, "aPos" },

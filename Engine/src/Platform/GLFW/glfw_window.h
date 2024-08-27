@@ -21,12 +21,13 @@ namespace utd
     
     public:
         static void default_callback(event&);
-        
+        template<typename t_native = GLFWwindow>
+        t_native* native_handle() { return static_cast<t_native*>(m_handle); }
+
     public:
         void show_cursor(bool state) override;
         bool cursor_disabled() override;
 
-        void* native_handle() override;
         bool opened() override;
         bool vsync() override;
         glm::vec2 size() override;
@@ -46,7 +47,6 @@ namespace utd
 
     private:
         bool m_vsync;
-        GLFWwindow* m_handle;
         std::uptr<graphics_context> m_context;
         properties m_properties;
     };

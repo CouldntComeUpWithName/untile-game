@@ -24,7 +24,7 @@ struct quad
     float texture_index;
 };
 
-std::array<quad, 4> make_quad(float x, float y, float idx)
+static std::array<quad, 4> make_quad(float x, float y, float idx)
 {
     quad q0 = { {x, y, 1.f}, {0.f, 0.f, 0.f, 1.f}, {0.f, 0.f}, 1.f };
     quad q1 = { {x, y, 1.f}, {0.f, 0.f, 0.f, 1.f}, {0.f, 0.f}, 1.f };
@@ -34,122 +34,171 @@ std::array<quad, 4> make_quad(float x, float y, float idx)
     return { q0, q1, q2, q3 };
 }
 
+utd::cstring vertex_cube
+{
+    R"(
+        #version 450 core
+
+        layout (location = 0) in vec3 a_Position;
+        layout (location = 1) in vec4 a_Color;
+        layout (location = 2) in vec2 a_TexCoord;
+        layout(location = 3) in float a_TexIndex;
+
+        layout(std140, binding = 0) uniform Camera
+        {
+	        mat4 u_ViewProjection;
+        };
+
+        out vec4 v_Color;
+        out float v_TexIndex;
+        out vec2 v_TexCoord;
+
+        void main()
+        {
+	        v_Color    = a_Color;
+	        v_TexCoord = a_TexCoord;
+	        v_TexIndex = a_TexIndex;
+
+	        gl_Position = u_ViewProjection * vec4(a_Position, 1.0f);
+        }
+    )"
+};
+
+utd::cstring fragment_shader
+{
+    R"(
+        #version 450
+        layout(location = 0) out vec4 o_Color;
+
+        in vec4 v_Color;
+        in vec2 v_TexCoord;
+        in float v_TexIndex;
+
+        layout(binding = 0) uniform sampler2D u_Textures[32];
+
+        void main()
+        {
+            int index = int(v_TexIndex);
+            o_Color = texture(u_Textures[index], v_TexCoord);
+        }
+    )"
+};
+
+int map[]
+{
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    0, 0, 2, 2, 2, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2,
+    0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0,
+    0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 2, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
 void cubes::on_attach()
 {
-    float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.f, 0.f, 0.f, 1.f, 0.0f, 0.0f,  1.f,
-     0.5f, -0.5f, -0.5f,  0.f, 0.f, 0.f, 1.f, 1.0f, 0.0f, 1.f,
-     0.5f,  0.5f, -0.5f,  0.f, 0.f, 0.f, 1.f,  1.0f, 1.0f, 1.f,
-     0.5f,  0.5f, -0.5f,  0.f, 0.f, 0.f, 1.f,  1.0f, 1.0f, 1.f,
-    -0.5f,  0.5f, -0.5f,  0.f, 0.f, 0.f, 1.f,  0.0f, 1.0f, 1.f,
-    -0.5f, -0.5f, -0.5f,  0.f, 0.f, 0.f, 1.f,  0.0f, 0.0f, 1.f,
-                                                          1.f,
-    -0.5f, -0.5f,  0.5f,  0.f, 0.f, 0.f, 1.f, 0.0f, 0.0f, 1.f,
-     0.5f, -0.5f,  0.5f,  0.f, 0.f, 0.f, 1.f, 1.0f, 0.0f, 1.f,
-     0.5f,  0.5f,  0.5f,  0.f, 0.f, 0.f, 1.f, 1.0f, 1.0f, 1.f,
-     0.5f,  0.5f,  0.5f,  0.f, 0.f, 0.f, 1.f, 1.0f, 1.0f, 1.f,
-    -0.5f,  0.5f,  0.5f,  0.f, 0.f, 0.f, 1.f, 0.0f, 1.0f, 1.f,
-    -0.5f, -0.5f,  0.5f,  0.f, 0.f, 0.f, 1.f, 0.0f, 0.0f, 1.f,
-                                                          1.f,
-    -0.5f,  0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 0.0f, 1.f,
-    -0.5f,  0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 1.0f, 1.f,
-    -0.5f, -0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 1.0f, 1.f,
-    -0.5f, -0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 1.0f, 1.f,
-    -0.5f, -0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 0.0f, 1.f,
-    -0.5f,  0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 0.0f, 1.f,
-                                                          1.f,
-     0.5f,  0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 0.0f, 1.f,
-     0.5f,  0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 1.0f, 1.f,
-     0.5f, -0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 1.0f, 1.f,
-     0.5f, -0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 1.0f, 1.f,
-     0.5f, -0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 0.0f, 1.f,
-     0.5f,  0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 0.0f, 1.f,
-                                                          1.f,
-    -0.5f, -0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 1.0f, 1.f,
-     0.5f, -0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 1.0f, 1.f,
-     0.5f, -0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 0.0f, 1.f,
-     0.5f, -0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 0.0f, 1.f,
-    -0.5f, -0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 0.0f, 1.f,
-    -0.5f, -0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 1.0f, 1.f,
-                                                          1.f,
-    -0.5f,  0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 1.0f, 1.f,
-     0.5f,  0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 1.0f, 1.f,
-     0.5f,  0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 0.0f, 1.f,
-     0.5f,  0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  1.0f, 0.0f, 1.f,
-    -0.5f,  0.5f,  0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 0.0f, 1.f,
-    -0.5f,  0.5f, -0.5f, 0.f, 0.f, 0.f, 1.f,  0.0f, 1.0f,  1.f
+    static float vertices[] = {
+     -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+     0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+     0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+     -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+     -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
+     -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+     0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+     0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+     0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+     -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+     -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+     -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+     -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+     -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+     -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+     -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+     -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+     0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+     0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+     0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+     0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+     -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+     0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+     0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+     -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+     -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+     -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+     0.5f, 0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, 0.5f, 0.5f,   1.0f, 0.0f,
+     0.5f, 0.5f, 0.5f,   1.0f, 0.0f,
+     -0.5f, 0.5f, 0.5f,  0.0f, 0.0f,
+     -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
     };
 
-   /* float vertices[] = {
-        -1.5f, -0.5f, 0.f,   0.18f, 0.6f, 0.96f, 1.f,  0.f, 0.f,   0.f,
-        -0.5f, -0.5f, 0.f,   0.18f, 0.6f, 0.96f, 1.f,  1.f, 0.f,   1.f,
-        -0.5f, 0.5f, 0.f,   0.18f, 0.6f, 0.96f, 1.f,   1.f, 1.f,   0.f,
-       -1.5f, 0.5f, 0.f,   0.18f, 0.6f, 0.96f, 1.f,    0.f, 1.f,   1.f,
-
-       0.5f, -0.5f, 0.0f,  1.0f, 0.93f, 0.24f, 1.0f,  0.0f, 0.0f, 1.f,
-       1.5f, -0.5f, 0.0f,  1.0f, 0.93f, 0.24f, 1.0f,  1.0f, 0.0f, 1.f,
-       1.5f, 0.5f, 0.0f,  1.0f, 0.93f, 0.24f, 1.0f,  1.0f, 1.0f,  1.f,
-       0.5f, 0.5f, 0.0f,  1.0f, 0.93f, 0.24f, 1.0f,  0.0f, 1.0f,  1.f,
-
-    };*/
-
-    std::uptr<utd::vertex_buffer> vb = std::make_unique<utd::vertex_buffer>(vertices, sizeof(vertices));
-
-    vb->set_layout
-    ({
-        { utd::shader::datatype::FLOAT3, "a_Position" },
-        { utd::shader::datatype::FLOAT4, "a_Color"}, 
-        { utd::shader::datatype::FLOAT2, "a_TexCoord" },
-        { utd::shader::datatype::FLOAT, "a_TexIndex" }
-        //{ utd::shader::datatype::FLOAT, "a_TilingFactor" }
-    });
-
-    uint32_t quadIndices[6]{};
-    utd::u32 qindex[]
+    quad quads[4]
     {
-        0, 1, 2, 2, 3, 0,
-        4, 5, 6, 6, 7, 4 
-
+        { { -0.5f, -0.5f, 0.0f}, {0.f, 0.f, 0.f, 1.f}, {0.f, 0.f}, 1.f},
+        { {  0.5f, -0.5f, 0.0f}, {0.f, 0.f, 0.f, 1.f}, {0.f, 0.f}, 1.f},
+        { {  0.5f,  0.5f, 0.0f}, {0.f, 0.f, 0.f, 1.f}, {0.f, 0.f}, 1.f},
+        { { -0.5f, 0.5f, 0.0f},  {0.f, 0.f, 0.f, 1.f}, {0.f, 0.f}, 1.f}
     };
 
-    uint32_t offset = 0;
-    for (uint32_t i = 0; i < 6; i += 6)
-    {
-        quadIndices[i + 0] = offset + 0;
-        quadIndices[i + 1] = offset + 1;
-        quadIndices[i + 2] = offset + 2;
+    //std::uptr<utd::vertex_buffer> vb = std::make_unique<utd::vertex_buffer>(quads, sizeof(quads) / sizeof(quad));
+    //vb->set_layout
+    //(
+    //    {
+    //       { utd::shader::datatype::FLOAT3, "aPos"     },
+    //       { utd::shader::datatype::FLOAT4, "aColor"        },
+    //       { utd::shader::datatype::FLOAT2, "aTexCoord"     },
+    //       { utd::shader::datatype::FLOAT,  "a_TexIndex"     },
+    //       //{ utd::shader::datatype::FLOAT,  "a_TilingFactor" }, 
+    //    }
+    //);
 
-        quadIndices[i + 3] = offset + 2;
-        quadIndices[i + 4] = offset + 3;
-        quadIndices[i + 5] = offset + 0;
-
-        offset += 4;
-    }
-
-    m_vertex_array.push_back(std::move(vb));
-
-    m_vertex_array.make_index_buffer(qindex);
-
+    //m_vertex_array.push_back(std::move(vb));
+   
     m_cobblestone = utd::texture::load("E:/Programming/untile/Untile/assets/textures/cobblestone_2.png");
+    m_sand        = utd::texture::load("E:/Programming/untile/Untile/assets/textures/sand_3.png");
     m_grass       = utd::texture::load("E:/Programming/untile/Untile/assets/textures/grass_3.png");
-    m_sand = utd::texture::load("E:/Programming/untile/Untile/assets/textures/sand_3.png");
-     m_texture_shader = utd::shader::load("E:/Programming/untile/Untile/assets/shaders/texture.vert", 
-     "E:/Programming/untile/Untile/assets/shaders/texture.frag");
     
-    m_sprite  = { {0.f, 0.f, 0.f, 1.f}, m_cobblestone, 1.f };
-    m_sprite1 = { {0.f, 0.f, 0.f, 1.f}, m_cobblestone, 1.f };
-
-    m_texture_shader->bind();
-    int samplers[] = { 0, 1, 2 };
-    m_texture_shader->array("u_textures", samplers, sizeof(samplers) / sizeof(int));
-
-    glm::vec3 front;
+    //m_texture_shader = utd::shader::create(vertex_cube, fragment_shader);
+    
+    /*glm::vec3 front;
     front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     front.y = sin(glm::radians(m_pitch));
-    front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+    front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));*/
 
-    m_front = glm::normalize(front);
-
+    //m_front = glm::normalize(front);
     m_right = glm::normalize(glm::cross(m_front, m_up));
 
     m_camera.type(utd::camera::type::PERSPECTIVE);
@@ -158,10 +207,28 @@ void cubes::on_attach()
     m_camera.orthographic(2.f, 100.f, 100.f);
     m_camera.viewport(16 / 9.f);
 
-    texture_map[0] = m_grass;
-    texture_map[1] = m_cobblestone;
-    texture_map[2] = m_sand;
+    for (auto& row : m_sprites)
+    {
+        for (auto& sprite : row)
+        {
+            sprite = { m_cobblestone, {(std::rand() % 255) / 255.f, (std::rand() % 255) / 255.f, (std::rand() % 255) / 255.f, 1.f}, 1.f };
+        }
+    }
+    //m_sprites[1] = { {0.f, 0.f, 0.f, 1.f}, m_grass, 1.f };
+    //m_sprites[0] = { {0.f, 0.f, 0.f, 1.f}, m_cobblestone, 1.f };
+    //m_sprites[2] = { {0.f, 0.f, 0.f, 1.f}, m_sand, 1.f };
+    //m_sprites[3] = { {0.f, 0.f, 0.f, 1.f}, m_cobblestone, 1.f };
+
+    //for (int x = 0; x < 100; x++)
+    //{
+    //    for (int y = 0; y < 100; y++)
+    //    {
+    //        //UTD_ENGINE_ERROR("map[current]: {0}", map[x * 26 + y]);
+    //        m_sprites[x][y] = { {0.f, 0.f, 0.f, 1.f}, texture_map[(y % 3) + 1], 1.f };
+    //    }
+    //}
 }
+
 
 void cubes::on_detach()
 {
@@ -170,18 +237,20 @@ void cubes::on_detach()
 
 void cubes::on_render()
 {
-    
+
     auto& io = ImGui::GetIO();
     ImGui::Begin("Cube Scene");                          // Create a window called "Hello, world!" and append into it.
 
     //ImGui::Text("T");               // Display some text (you can use a format strings too)
     ImGui::Checkbox("visible", &visible);
-    
-    //ImGui::SliderFloat("Camera FOV", &camera.fovy(), 30.f, 135.f);
     auto stats = get_stats();
-    
-    ImGui::Text("Q");
-    ImGui::Text(std::to_string(stats.quad_drawn_count).c_str());
+    //ImGui::SliderFloat("Camera FOV", &camera.fovy(), 30.f, 135.f);
+    ImGui::Text((std::string("Quads: ") + std::to_string(stats.quad_drawn_count)).c_str());
+    ImGui::Text("Draw Calls: ");
+    ImGui::SameLine();
+    ImGui::Text(std::to_string(stats.draw_calls).c_str());
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
     const char* projection_type_str[] = { "Perspective", "Orthographic" };
     const char* current_projection_type_str = projection_type_str[(int)m_camera.type()];
 
@@ -202,7 +271,7 @@ void cubes::on_render()
     }
 
     ImGui::BeginGroup();
-        
+
     if (m_camera.type() == utd::camera::type::ORTHOGRAPHIC)
     {
         float curr_size = m_camera.ortho_size();
@@ -219,53 +288,70 @@ void cubes::on_render()
             m_camera.fovy(curr_fov);
         }
     }
-        
+
     ImGui::EndGroup();
+
 
     ImGui::End();
 
-    if(visible)
+    if (visible)
     {
-        UTD_PROFILE_SCOPE(__FUNCTION__ " - if (visible)");
-        
-        static constexpr glm::vec2 TEXTURE_COORDS[4] 
-        {
-            {0.f, 0.f}, {1.f, 0.f}, 
-            
-            {1.f, 1.f}, {0.f, 1.f}
-        };
+        utd::renderer::command::depth_buffer(true);
 
-       //m_grass->bind(0);
-       //m_sprite.texture->bind(1);
-        
-       /* m_texture_shader->bind();
-        m_texture_shader->mat4("u_projection", m_camera.projection());*/
+        //m_texture_shader->bind();
+
         //utd::renderer::command::draw_indexed(m_vertex_array, 12);
 
-        utd::renderer2d::begin(m_camera);
-        int i = 0;
-        for (float x = -1.0f; x < 1.f; x += 0.02f)
+
+        //utd::renderer2D::begin(m_camera, glm::lookAt(m_camera.position(), { -0.5f, -1.f, -10.f }, {0.f, 1.f, 0.f}));
+        //int i = 0;
+        //for (auto& sprite : m_sprites)
+        //{
+        //    utd::renderer2d::draw({ { -0.5f + i, -0.5f - i, -30.f }, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f} }, sprite);
+        //    i++;
+        //}
+
+         //utd::renderer2d::draw({{-0.5f, 0.5f, -30.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f}}, {{0.f, 0.f, 0.f, 1.f}, m_cobblestone, 1.f});
+         //utd::renderer2d::draw({ { 0.5f, 0.5f, -30.f }, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f} }, { {0.f, 0.f, 0.f, 1.f}, m_sand, 1.f });
+         //utd::renderer2d::draw({ { 0.5f,-0.5f, -30.f }, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f} }, { {0.f, 0.f, 0.f, 1.f}, m_cobblestone, 1.f });
+         //utd::renderer2d::draw({ { -0.5f, -0.5f, -30.f }, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f} }, { {0.f, 0.f, 0.f, 1.f}, m_grass, 1.f});
+
+        //utd::renderer2d::begin(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(-0.f, -0.f, -3.f)));
+        static utd::ref_ptr<utd::texture> texture_map[]
         {
-            for(float j = 1.f; j > -1.f; j -= 0.02f)
+            utd::ref_ptr<utd::texture>(), m_grass, m_cobblestone, m_sand
+        };
+
+        utd::renderer2D::begin(m_editor_camera);
+        for (auto x = 0; x < 100; x++)
+        {
+            for (auto y = 0; y < 100; y++)
             {
-                utd::renderer2D::draw({ {x / 0.02f, j  / 0.02f, 0.f}, {glm::radians(30.f), glm::radians(55.f), 0.f}, {1.0f, 1.0f, 1.f}}, {{0.f, 0.f, 0.f, 1.f}, texture_map[i % 3], 1.f});
-                i++;
+                utd::renderer2d::draw({ {  y,  x, -30.f }, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f} }, m_sprites[x][y]);
             }
         }
-        //utd::renderer2D::draw({ {-0.5f, -0.5f, 0.f}, {0.f, 0.f, 0.f}, { 1.f, 1.f, 1.f} }, m_sprite);
-        //utd::renderer2D::draw({ {-0.5f, 0.5f, 0.f}, {0.f, 0.f, 0.f}, { 1.f, 1.f, 1.f} }, { {0.f, 0.f, 0.f, 1.f}, m_grass, 1.f });
-        utd::renderer2d::end();
-        
-        //utd::renderer::command::draw_arrays(m_vertex_array, 0, 36);
-        
-         //for (auto i = 0; i < 10; i++)
-         //{
-         //    // glm::mat4 model = glm::mat4(1.0f);
-         //    // model = glm::translate(model, cubePositions[i]);
-         //    // float angle = 20.0f * i;
-         //    // model = glm::rotate(model, glm::radians(angle), { 1.0f, 0.3f, 0.5f });
-         //    // m_texture_shader->mat4("model", model);
-         //}
+
+        /*for (int y = 0; y < 32; y++)
+        {
+            for (int x = 0; x < 26; x++)
+            {
+                utd::renderer2d::draw({ {  y,  x, -30.f }, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f} }, { { 0.f, 0.f, 0.f, 1.f }, texture_map[map[y * 26 + x] + 1], 4.f });
+            }
+        }*/
+
+       utd::renderer2d::end();
+        /*m_cobblestone->bind();
+        for (auto i = 0; i < 10; i++)
+        {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * i;
+            model = glm::rotate(model, glm::radians(angle), { 1.0f, 0.3f, 0.5f });
+            m_texture_shader->mat4("model", model);
+
+            utd::renderer::command::draw_arrays(m_vertex_array, 0, 36);
+
+        }*/
 
     }
 }
@@ -289,26 +375,26 @@ void cubes::on_update(float dt)
         UTD_PROFILE_BEGIN("Setting projection and view to m_texture_shader");
 
         //UTD_ENGINE_INFO("Camera position: {0}, {1}, {2}", m_camera.position().x, m_camera.position().y, m_camera.position().z);
-
-        //m_camera.projection(glm::perspective(glm::radians(m_camera.fovy()), 16 / 9.f, 0.1f, 1000.f));
-        //m_camera.perspective(m_camera.fovy(), 0.1f, 1000.f);
+        m_editor_camera.on_update(dt);
+        ////m_camera.projection(glm::perspective(glm::radians(m_camera.fovy()), 16 / 9.f, 0.1f, 1000.f));
+        ////m_camera.perspective(m_camera.fovy(), 0.1f, 1000.f);
 
         bool camera_moved = false;
-        auto speed = 5.f * dt;
+        auto speed = 5.f * dt * 2;
 
-        //m_texture_shader->set_mat4("view", glm::lookAt(m_camera.position(), m_camera.position() + m_front, m_up));
+        ////m_texture_shader->set_mat4("view", glm::lookAt(m_camera.position(), m_camera.position() + m_front, m_up));
 
         //if (m_pitch > 89.9f)
         //    m_pitch = 89.9f;
         //else if (m_pitch < -89.9f)
         //    m_pitch = -89.9f;
 
-       /* glm::vec3 front;
+        glm::vec3 front;
         front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
         front.y = sin(glm::radians(m_pitch));
-        front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));*/
+        front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
 
-        //m_right = glm::normalize(glm::cross(m_front, m_up));
+        m_right = glm::normalize(glm::cross(m_front, m_up));
 
         camera_moved |= utd::input::is_mouse_moved();
 
@@ -345,8 +431,12 @@ void cubes::on_update(float dt)
         {
             //m_position -= glm::normalize(glm::cross(m_front, m_up)) * (m_speed * dt);
             auto pos = m_camera.position();
-            pos -= glm::normalize(glm::cross(m_front, m_up)) * speed;
+
+            pos.x += cos(glm::radians(0.f)) * speed;
+            pos.y += sin(glm::radians(0.f)) * speed;
             m_camera.position(pos);
+          /*  pos -= glm::normalize(glm::cross(m_front, m_up)) * speed;
+            m_camera.position(pos);*/
             
             camera_moved = true;
 
@@ -354,20 +444,21 @@ void cubes::on_update(float dt)
         if (utd::input::is_key_pressed(utd::key::D))
         {
             auto pos = m_camera.position();
-            pos += glm::normalize(glm::cross(m_front, m_up)) * speed;
+            pos.x -= cos(glm::radians(0.f)) * speed;
+            pos.y -= sin(glm::radians(0.f)) * speed;
             m_camera.position(pos);
             
             camera_moved = true;
         }
 
-        //UTD_PROFILE_SCOPE("LookAt");
-        
-        /*m_texture_shader->bind();
-        m_texture_shader->mat4("u_projection", m_camera.projection());*/
+        ////UTD_PROFILE_SCOPE("LookAt");
+        //
+        //m_texture_shader->bind();
+        //auto view = glm::lookAt(m_camera.position(), m_camera.position() + m_front, m_up);
+        //m_texture_shader->mat4("u_viewprojection", m_camera.projection() * view);
 
-        if (camera_moved)
+        //if (camera_moved)
         {
-            auto view = glm::lookAt(m_camera.position(), m_camera.position() + m_front, m_up);
 
             //m_texture_shader->mat4("u_view", view_projection);
         }
@@ -379,8 +470,8 @@ void cubes::on_update(float dt)
 
 void cubes::on_event(utd::event& event)
 {
-
-    //m_camera.on_event(event);
+    m_editor_camera.on_event(event);
+    //utd::event_dispatcher::dispatch<mouse_scroll_event>(UTD_BIND_EVENT(event, ));
 }
 
 cubes::~cubes()

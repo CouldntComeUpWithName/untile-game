@@ -27,6 +27,7 @@ namespace utd
             MOUSE_MOVE,
             MOUSE_BUTTON_PRESSED,
             MOUSE_BUTTON_RELEASED,
+            MOUSE_SCROLLED,
             MOUSE_SCROLLED_UP,
             MOUSE_SCROLLED_DOWN,
             KEY_PRESSED,

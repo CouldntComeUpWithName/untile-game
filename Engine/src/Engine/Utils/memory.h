@@ -9,26 +9,34 @@ namespace utd
     {
     public:
         ref_ptr() = default;
-        ref_ptr(const ref_ptr<T>& ref) = default;
-        //     : m_ptr(ref.m_ptr)
-        // { }
+        ref_ptr(const ref_ptr<T>& ref)
+             : m_ptr(ref.m_ptr)
+        { }
 
-        ref_ptr(const std::unique_ptr<T>& uptr) : m_ptr(uptr.get()) {}
+        ref_ptr(const std::unique_ptr<T>& uptr) : m_ptr(uptr.get()) 
+        {}
+        
+        ref_ptr(std::nullptr_t null)
+            : m_ptr{null}
+        {
+
+        }
         
         ref_ptr(T& _ref)
         : m_ptr(&_ref)
         { }
         
         ref_ptr(ref_ptr<T>&&) = default;
-        ref_ptr<T>& operator = (const ref_ptr<T>& ref) = default;
-        // {
-        //     // if(*this == ref)
-        //     //     return *this;
+        ref_ptr<T>& operator = (const ref_ptr<T>& ref)
+        {
+            if(this == &ref)
+                return *this;
             
-        //     m_ptr = ref.m_ptr;
+            m_ptr = ref.m_ptr;
             
-        //     return *this;
-        // }
+            return *this;
+        }
+
         ref_ptr<T>& operator = (ref_ptr<T>&&)      = default;
         ref_ptr<T>& operator = (const std::unique_ptr<T>& _uref)
         {
@@ -37,11 +45,14 @@ namespace utd
         }
         ref_ptr<T>& operator = (const T& ref)
         {
-            static_assert(std::is_copy_assignable_v<T>, "You should never move resources to ref_ptr");
+            static_assert(std::is_copy_assignable_v<T>, "resource can\'t be copied, the object is non-copyable");
             *m_ptr = ref;
             return *this;
         }
-
+        ref_ptr<T>& operator = (std::nullptr_t null)
+        {
+            m_ptr = null;
+        }
         operator bool() const { return m_ptr; }
         bool valid() const { return m_ptr; }
     

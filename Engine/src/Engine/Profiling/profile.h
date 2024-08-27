@@ -11,8 +11,7 @@
 
 
 #include <Engine/Utils/object_traits.h>
-#include <Engine/Core/System/clock.h>
-
+#include <Platform/Common/System/clock.h>
 
 namespace utd
 {

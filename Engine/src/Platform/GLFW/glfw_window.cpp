@@ -44,9 +44,10 @@ void utd::glfw_window::init(u32 width, u32 height, const std::string& title, con
     m_context->init(m_handle);
     UTD_ENGINE_INFO("Graphics context has been initialized");
 
-    glfwSetWindowUserPointer(m_handle, &m_properties);
+    glfwSetWindowUserPointer(native_handle(), &m_properties);
+    glfwSetInputMode(native_handle(), GLFW_STICKY_KEYS, GLFW_TRUE);
     
-    glfwSetKeyCallback(m_handle, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+    glfwSetKeyCallback(native_handle(), [](GLFWwindow* window, int key, int scancode, int action, int mods)
     {
         auto& props = *(properties*)glfwGetWindowUserPointer(window);
         
@@ -73,7 +74,7 @@ void utd::glfw_window::init(u32 width, u32 height, const std::string& title, con
         }
     });
 
-    glfwSetWindowSizeCallback(m_handle, [](GLFWwindow* window, int width, int height)
+    glfwSetWindowSizeCallback(native_handle(), [](GLFWwindow* window, int width, int height)
     {
         auto& props  = *(properties*)glfwGetWindowUserPointer(window);
         props.width  = width;
@@ -83,12 +84,12 @@ void utd::glfw_window::init(u32 width, u32 height, const std::string& title, con
         props.event_callback(event);
     });
    
-    glfwSetFramebufferSizeCallback(m_handle, [](GLFWwindow* hwnd, int w, int h)
+    glfwSetFramebufferSizeCallback(native_handle(), [](GLFWwindow* hwnd, int w, int h)
     {
         glViewport(0, 0, w, h);
     });
 
-    glfwSetWindowCloseCallback(m_handle, [](GLFWwindow* window)
+    glfwSetWindowCloseCallback(native_handle(), [](GLFWwindow* window)
     {
         auto& props = *(properties*)glfwGetWindowUserPointer(window);
 
@@ -96,7 +97,7 @@ void utd::glfw_window::init(u32 width, u32 height, const std::string& title, con
         props.event_callback(event);
     });
 
-    glfwSetMouseButtonCallback(m_handle, [](GLFWwindow* window, int button, int action, int mods)
+    glfwSetMouseButtonCallback(native_handle(), [](GLFWwindow* window, int button, int action, int mods)
     {
         auto& props = *(properties*)glfwGetWindowUserPointer(window);
 
@@ -118,7 +119,7 @@ void utd::glfw_window::init(u32 width, u32 height, const std::string& title, con
         }
     });
 
-    glfwSetCursorPosCallback(m_handle, [](GLFWwindow* window, double x, double y)
+    glfwSetCursorPosCallback(native_handle(), [](GLFWwindow* window, double x, double y)
     {
         auto& props = *(properties*)glfwGetWindowUserPointer(window);
         
@@ -126,11 +127,21 @@ void utd::glfw_window::init(u32 width, u32 height, const std::string& title, con
         props.event_callback(event);
     });
 
+    glfwSetScrollCallback(native_handle(), [](GLFWwindow* window, double xoffset, double yoffset)
+    {
+        auto& props = *(properties*)glfwGetWindowUserPointer(window);
+
+        mouse_scrolled_event event(xoffset, yoffset);
+        props.event_callback(event);
+
+    });
+
     UTD_ENGINE_INFO("Callbacks are set");
 }
 
 void utd::glfw_window::init(const properties& props, const event_callback_func&)
 {
+#if 0
     m_properties = props;
 
     if (s_glfw_window_counter == 0)
@@ -149,9 +160,11 @@ void utd::glfw_window::init(const properties& props, const event_callback_func&)
 
     UTD_ENGINE_INFO("Graphics context has been created");
 
-    glfwSetFramebufferSizeCallback(m_handle, [](GLFWwindow* hwnd, int w, int h) { glViewport(0, 0, w, h); });
-    
+    glfwSetFramebufferSizeCallback(native_handle(), [](GLFWwindow* hwnd, int w, int h) { glViewport(0, 0, w, h); });
+
     UTD_ENGINE_INFO("Callbacks are set");
+#endif // 0
+
 
 }
 
@@ -163,24 +176,19 @@ void utd::glfw_window::default_callback(utd::event&)
 void utd::glfw_window::show_cursor(bool state)
 {
     if(state)
-        glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(native_handle(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     else
-        glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(native_handle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 bool utd::glfw_window::cursor_disabled()
 {
-    return glfwGetInputMode(m_handle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
-}
-
-void *utd::glfw_window::native_handle()
-{
-    return m_handle;
+    return glfwGetInputMode(native_handle(), GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
 }
 
 bool utd::glfw_window::opened()
 {
-    return !glfwWindowShouldClose(m_handle);
+    return !glfwWindowShouldClose(native_handle());
 }
 
 glm::vec2 utd::glfw_window::size()
@@ -210,7 +218,7 @@ void utd::glfw_window::vsync(bool enable)
 
 void utd::glfw_window::title(const std::string_view title)
 {
-    glfwSetWindowTitle(m_handle, title.data());
+    glfwSetWindowTitle(native_handle(), title.data());
 }
 
 void utd::glfw_window::max_fps(u32)
@@ -224,7 +232,7 @@ void utd::glfw_window::callback(const event_callback_func& callback)
 
 void utd::glfw_window::close()
 {
-    glfwSetWindowShouldClose(m_handle, true);
+    glfwSetWindowShouldClose(native_handle(), true);
 }
 
 void utd::glfw_window::update()
@@ -237,7 +245,7 @@ utd::glfw_window::~glfw_window()
 {
     if(m_handle)
     {
-        glfwDestroyWindow(m_handle);
+        glfwDestroyWindow(native_handle());
         m_handle = nullptr;
     }
 

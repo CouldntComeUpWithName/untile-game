@@ -46,6 +46,7 @@ namespace utd
         //temp
         // static void draw(const std::ref_ptr<texture>& texture);
         //temp
+        static void draw(const entity& entity);
         static void draw(const transform& transform, const line& line);
         static void draw(const transform& transform, const circle& circle);
         static void draw(const transform& transform, const sprite& sprite);

@@ -68,7 +68,8 @@ namespace utd
         m_index_buffer = std::make_unique<index_buffer>(std::forward<t_ctor_params>(params)...);
         m_index_buffer->bind();
     }
-    //doesn't work atm
+
+    //isn't working atm
     template<typename ...t_ctor_params>
     inline vertex_buffer& vertex_array::emplace_back(t_ctor_params&&... params)
     {

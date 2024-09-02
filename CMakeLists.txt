@@ -46,10 +46,11 @@ if(TRACY_ENABLE AND OPTICK_ENABLED)
 endif()
 
 if(MSVC)
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Untile)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Editor)
 endif()
 
 add_subdirectory(Engine)
 add_subdirectory(Untile)
+add_subdirectory(Editor)
 
 

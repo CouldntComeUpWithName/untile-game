@@ -5,6 +5,7 @@
 #include <utility>
 
 #include <Engine/Utils/object_traits.h>
+#include <Engine/Core/forward_declarations.h>
 
 #define BIT(offset) (1 << offset)
 #define STR(str) #str
@@ -33,18 +34,12 @@ namespace utd
 	using i8   = char;
 	using f128 = long double;
 	
-	using byte  = i8;
-	using ubyte = u8;
+	using byte  = u8;
+	using ibyte = i8;
 	using word  = u16;
 	using dword = u32;
 	
 	using cstring = const char*;
-
-	template<typename T>
-	using d_buffer = std::vector<T>;
-
-	template<typename T, typename std::size_t SIZE>
-	using buffer = std::array<T, SIZE>;
 
 } /* namespace utd */
 

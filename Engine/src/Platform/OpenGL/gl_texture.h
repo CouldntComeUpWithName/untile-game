@@ -12,6 +12,7 @@ namespace utd
         gl_texture() = default;
         gl_texture(const specs&);
         gl_texture(const std::string& filepath);
+        ~gl_texture() override;
 
         const specs& get_specs() override;
 
@@ -19,7 +20,8 @@ namespace utd
         u32 height() const override;
         glm::vec2 size() const override;
         const std::string& path() const override;
-        void set_data(void* data, u32 slot) override;
+        void set_data(void* data, u32 size) override;
+        void set_data(const image&) override;
         bool is_loaded() const override;
         bool operator==(const texture& other) const override;
 

@@ -1,13 +1,19 @@
 #include "upch.h"
 #include "gl_shader.h"
 
-#include <fstream>
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <Engine/Core/Log.h>
 #include <Engine/Core/Assert.h>
 #include <Engine/Profiling/Profile.h>
+#include <Platform/Common/iosystem.h>
+#include <Engine/Core/Buffer.h>
+
+utd::gl_shader::gl_shader(const std::filesystem::path &vertex, const std::filesystem::path &fragment)
+{
+	_filepath(vertex, fragment);
+}
 
 void utd::gl_shader::bind()
 {
@@ -193,15 +199,19 @@ std::string read_file(const std::string& filepath, std::ios_base::openmode mode)
 void utd::gl_shader::filepath(const std::string& vert_path, const std::string& frag_path)
 {
 	UTD_PROFILE_FUNC(profile::color::deeprose);
-	 
-	std::string vert_source = read_file(vert_path, std::ios::in | std::ios::binary);
-	std::string frag_source = read_file(frag_path, std::ios::in | std::ios::binary);
+	_filepath(vert_path, frag_path);
+}
+
+void utd::gl_shader::_filepath(const std::filesystem::path &vert_path, const std::filesystem::path &frag_path)
+{
+	
+	auto vert_source = read_file(vert_path.string(), std::ios::in | std::ios::binary);
+	auto frag_source = read_file(frag_path.string(), std::ios::in | std::ios::binary);
 
 	u32 vertex, fragment;
 	int success;
-
 	cstring vert = vert_source.c_str();
-	cstring frag = frag_source.c_str();
+	const char* frag = frag_source.c_str();
 
 	vertex = glCreateShader(GL_VERTEX_SHADER);
 

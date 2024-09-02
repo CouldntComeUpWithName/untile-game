@@ -1,9 +1,32 @@
 #pragma once
 #include <memory>
+#include "windows.devices.input.preview.h"
+
+namespace utd::filesystem
+{
+    
+}
 
 namespace utd
 {
-    /// @brief useful imho hybrid resource wrapper which's supposed to own a resource, NOT to manage it
+    class texture;
+    class shader;
+    enum class image_format;
+
+    typedef size_t bytes_t;
+    
+    // these evaluate the size in bytes for the value, not the data type which represents them
+    bytes_t vmemsize_of(const texture&);
+    bytes_t vmemsize_of(const shader&);
+    bytes_t memsize_of(const image_format&);
+    
+    template<typename t_resource>
+    inline bytes_t vmemsize_of(t_resource&&)
+    {
+        return {};
+    }
+
+    /// @brief an useful imho hybrid resource wrapper which's supposed to own a resource, NOT to manage it
     template<typename T>
     class ref_ptr
     {
@@ -13,13 +36,12 @@ namespace utd
              : m_ptr(ref.m_ptr)
         { }
 
-        ref_ptr(const std::unique_ptr<T>& uptr) : m_ptr(uptr.get()) 
+        ref_ptr(const std::unique_ptr<T>& uptr) : m_ptr(uptr.get())
         {}
         
         ref_ptr(std::nullptr_t null)
             : m_ptr{null}
         {
-
         }
         
         ref_ptr(T& _ref)
@@ -36,7 +58,7 @@ namespace utd
             
             return *this;
         }
-
+        
         ref_ptr<T>& operator = (ref_ptr<T>&&)      = default;
         ref_ptr<T>& operator = (const std::unique_ptr<T>& _uref)
         {
@@ -58,6 +80,8 @@ namespace utd
     
         T* operator->() const { return m_ptr; }
         inline T& operator*() { return *m_ptr; }
+        
+        T& operator[](int index) { return m_ptr[index]; }
 
         inline T* get() const { return m_ptr; }
         inline T& ref() const { return *m_ptr; }
@@ -76,5 +100,33 @@ namespace utd
     typename ref_ptr<T> make_ref(std::unique_ptr<T>& _ref)
     {
         return ref_ptr<T>(_ref.get());
+    }
+    
+    namespace diu // digital information unit
+    {
+        constexpr size_t operator""_b(size_t val)noexcept
+        {
+            return val;
+        }
+        
+        constexpr size_t operator""_kb(long double val)noexcept
+        {
+            return static_cast<size_t>(val * 1024_b);
+        }
+
+        constexpr size_t operator""_kb(size_t val)noexcept
+        {
+            return val * 1024_b;
+        }
+
+        constexpr size_t operator""_mb(long double val)noexcept
+        {
+            return static_cast<size_t>(val * 1024_kb);
+        }
+
+        constexpr size_t operator""_mb(size_t val)noexcept
+        {
+            return val * 1024_kb;
+        }
     }
 };

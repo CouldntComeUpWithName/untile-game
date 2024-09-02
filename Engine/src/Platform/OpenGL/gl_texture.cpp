@@ -1,12 +1,11 @@
 #include <upch.h>
 #include "gl_texture.h"
 
-#include <stb_image.h>
 #include <glad/glad.h>
+#include <stb_image.h>
 
 #include <Engine/Core/Assert.h>
-
-static inline utd::image_format enum_cast(int channels);
+#include <Engine/Graphics/image.h>
 
 utd::gl_texture::gl_texture(const specs& specifications)
     : m_specifications(specifications), m_loaded(false)
@@ -23,16 +22,15 @@ utd::gl_texture::gl_texture(const specs& specifications)
 
 utd::gl_texture::gl_texture(const std::string& path)
 {
-    stbi_set_flip_vertically_on_load(true);
-    m_path = std::make_unique<std::string>(path);
+    auto image = utd::image::load(path);
 
-    i32 channels;
-    ubyte* data = stbi_load(m_path.get()->c_str(), &m_specifications.width, &m_specifications.height, &channels, 0);
+    UTD_ENGINE_ASSERT(image, "Can\'t load a texture from file");
     
-    UTD_ENGINE_ASSERT(data, "Can\'t load a texture from file");
+    m_specifications.width  = image->width();
+    m_specifications.height = image->height();
     m_loaded = true;
-
     //glGenTextures(1, &m_id);
+    
     glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
     glBindTexture(GL_TEXTURE_2D, m_id);
     
@@ -41,20 +39,26 @@ utd::gl_texture::gl_texture(const std::string& path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     
-    if(channels == 4)
+    switch (image->get_format())
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_specifications.width, m_specifications.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        m_specifications.format = utd::image_format::RGBA8;
+    case image::format::RGBA8:
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_specifications.width, m_specifications.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->raw_data());
+        break;
+    case image::format::RGB8:
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_specifications.height, m_specifications.height, 0, GL_RGB, GL_UNSIGNED_BYTE, image->raw_data());
+        break;
+    default:
+        UTD_ENGINE_ASSERT(false, "image format is unsupported!");
     }
-    else
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_specifications.height, m_specifications.height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        m_specifications.format = utd::image_format::RGB8;
-    }
-   
+
+    m_path = std::make_unique<std::string>(image->path());
+
     glGenerateMipmap(GL_TEXTURE_2D);
-    
-    stbi_image_free(data);
+}
+
+utd::gl_texture::~gl_texture()
+{
+    glDeleteTextures(1, &m_id);
 }
 
 const utd::texture::specs& utd::gl_texture::get_specs()
@@ -82,9 +86,15 @@ const std::string& utd::gl_texture::path() const
     return *m_path.get();
 }
 
-void utd::gl_texture::set_data(void* data, u32 slot)
+void utd::gl_texture::set_data(void* data, u32 size)
 {
     glTextureSubImage2D(m_id, 0, 0, 0, m_specifications.width, m_specifications.height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
+
+void utd::gl_texture::set_data(const image& image)
+{
+    auto format = image.get_format() == utd::image::format::RGBA8 ? GL_RGBA : GL_RGB;
+    glTextureSubImage2D(m_id, 0, 0, 0, image.width(), image.height(), format, GL_UNSIGNED_BYTE, image.raw_data());
 }
 
 bool utd::gl_texture::is_loaded() const
@@ -101,19 +111,4 @@ void utd::gl_texture::bind(u32 slot)
 {
     glBindTextureUnit(slot, m_id);
 }
-
-
-static inline utd::image_format enum_cast(int channels)
-{
-    switch (channels)
-    {
-    case 3:
-        return utd::image_format::RGB8;
-    case 4:
-        return utd::image_format::RGBA8;
-    default:
-        return utd::image_format::NONE;
-    }
-}
-
 

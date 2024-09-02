@@ -29,18 +29,17 @@ utd::imgui_layer::imgui_layer(const std::string &name)
 
 void utd::imgui_layer::on_attach()
 {
+    UTD_PROFILE_FUNC(utd::profile::color::deepred);
+    
     IMGUI_CHECKVERSION();
     
-    UTD_PROFILE_FUNC(utd::profile::color::deepred);
-
     ImGui::CreateContext();
     
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-
+    
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsLight();
 
@@ -53,7 +52,7 @@ void utd::imgui_layer::on_attach()
     }
 
     auto& window = singleton<application>::instance().get_window();
-    ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)window.native_handle(), true);
+    ImGui_ImplGlfw_InitForOpenGL(window.native_handle<GLFWwindow>(), true);
 #ifdef __EMSCRIPTEN__
     ImGui_ImplGlfw_InstallEmscriptenCanvasResizeCallback("#canvas");
 #endif

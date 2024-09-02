@@ -40,7 +40,6 @@ utd::application::application(const cmdline_args &)
     renderer::init();
     
     push_overlay(new imgui_layer());
-    //push_overlay(new demo());
 }
 
 void utd::application::push_layer(layer *layer)
@@ -83,7 +82,7 @@ void utd::application::run()
         UTD_PROFILE_BEGIN("Layer Drawing time", tracy::Color::Orange);
         
         m_imgui_layer->begin();
-        for(auto* layer : m_layer_stack)
+        for(auto layer : m_layer_stack)
         {
             layer->on_update(dt);
             layer->on_render();
@@ -100,14 +99,12 @@ void utd::application::run()
     }
 }
 
-
-
-bool utd::application::close(utd::event &event)
+bool utd::application::on_close(event&)
 {
     return !(m_running = false);
 }
 
-bool utd::application::window_resize(window_resize_event& event)
+bool utd::application::on_window_resize(window_resize_event& event)
 {
     glViewport(0, 0, event.width(), event.height());
     return true;
@@ -115,8 +112,8 @@ bool utd::application::window_resize(window_resize_event& event)
 
 void utd::application::on_event(event& event)
 {
-    event_dispatcher::dispatch<window_close_event>(event, UTD_BIND_EVENT(application::close));
-    event_dispatcher::dispatch<window_resize_event>(event, UTD_BIND_EVENT(application::window_resize));
+    event_dispatcher::dispatch<window_close_event>(event, UTD_BIND_EVENT(application::on_close));
+    event_dispatcher::dispatch<window_resize_event>(event, UTD_BIND_EVENT(application::on_window_resize));
 
     for (auto* layer : m_layer_stack)
     {
@@ -126,6 +123,11 @@ void utd::application::on_event(event& event)
     //UTD_ENGINE_INFO(event.str());
 }
 
+void utd::application::close()
+{
+    m_running = false;
+}
+// TODO: REMOVE THESE
 void utd::triangle()
 {
     constexpr unsigned int SCR_WIDTH = 800;
@@ -292,15 +294,3 @@ void utd::triangle()
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-
-
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
-//void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-//{
-//    fov -= (float)yoffset;
-//    if (fov < 1.0f)
-//        fov = 1.0f;
-//    if (fov > 45.0f)
-//        fov = 45.0f;
-//}

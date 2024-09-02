@@ -1,22 +1,13 @@
 #pragma once
-#include <string>
+
 #include <glm/vec2.hpp>
 
 #include <Engine/Core/Base.h>
 #include <Engine/Core/Log.h>
+#include <Engine/Utils/memory.h>
 
-#include <string>
 namespace utd
 {
-    enum class image_format
-    {
-        NONE = 0,
-        R8,
-        RGB8,
-        RGBA8,
-        RGBA32F
-    };
-
     class texture : noncopyable
     {
         using id = u32;
@@ -25,8 +16,9 @@ namespace utd
         {
             i32 width           = 1;
             i32 height          = 1;
-            image_format format = image_format::RGBA8;
-            bool mips           = true;
+            i32 channels        : 2 = 4;
+            i32 channel_size    : 2 = 1; 
+            bool mips           : 1 = true;
         };
 
     public:
@@ -44,19 +36,19 @@ namespace utd
 
         virtual const std::string& path() const = 0;
 
-        virtual void set_data(void* data, u32 slot = 0) = 0;
+        virtual void set_data(void* data, u32 size = 0) = 0;
+        virtual void set_data(const image&) = 0;
         virtual bool is_loaded() const = 0;
         inline id get_id() const { return m_id; }
         virtual bool operator==(const texture& other) const = 0;
     public:
         static std::uptr<texture> load(const std::string& filepath);
         static std::uptr<texture> create();
-    private:
-        // virtual void release() = 0;
     protected:
         id m_id = 0;
     };
-
     
+
+
     
 } /* namespace utd */

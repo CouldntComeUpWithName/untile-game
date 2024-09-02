@@ -4,6 +4,7 @@ bin-int/
 build/
 .vscode/
 _references/
+assets/
 
 # Ignore CLion project directory and iml files
 .idea/
@@ -19,3 +20,4 @@ _references/
 **.vcxproj.filters
 **.vcxproj.user
 **.csproj
+

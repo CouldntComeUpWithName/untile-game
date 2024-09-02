@@ -8,6 +8,9 @@
 
 #include <glm/glm.hpp>
 #include <Engine/Scene/components.h>
+
+#include <Engine/Core/resource_manager.h>
+
 class utd::event;
 class utd::shader;
 
@@ -28,10 +31,10 @@ private:
     bool visible = true;
     bool cursor_hidden = false;
     utd::vertex_array m_vertex_array;
-    std::uptr<utd::texture> m_cobblestone;
-    std::uptr<utd::texture> m_grass;
-    std::uptr<utd::texture> m_sand;
-    std::uptr<utd::shader> m_texture_shader;
+    utd::ref_ptr<utd::texture> m_cobblestone;
+    utd::ref_ptr<utd::texture> m_grass;
+    utd::ref_ptr<utd::texture> m_sand;
+    utd::ref_ptr<utd::shader> m_texture_shader;
     utd::editor_camera m_editor_camera;
     utd::multi_camera m_camera;
     utd::ref_ptr<utd::texture> texture_map[3];
@@ -45,6 +48,8 @@ private:
     float m_yaw   = 45.f;
     float m_pitch = 89.f;
 
+    utd::texture_pack m_texture_manager;
+    
     glm::vec3 cubePositions[10] = {
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(2.0f, 5.0f, -15.0f),

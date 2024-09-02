@@ -39,10 +39,12 @@ namespace utd
 
         void push_layer(layer* layer);
         void push_overlay(layer* overlay);
+        
+        void close();
 
     protected:
-        bool close(event&);
-        bool window_resize(window_resize_event&);
+        bool on_close(event&);
+        bool on_window_resize(window_resize_event&);
 
     private:
         bool m_running;
@@ -51,8 +53,7 @@ namespace utd
         layer_stack m_layer_stack;
         utd::camera m_camera;
     };
-
+    
     void triangle();
     void cubes();
-
 }

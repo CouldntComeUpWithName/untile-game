@@ -21,3 +21,6 @@ assets/
 **.vcxproj.user
 **.csproj
 
+# my notes about code changes for better version controll tracking
+# also a temporary solution
+.commit.txt 

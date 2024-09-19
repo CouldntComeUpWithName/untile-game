@@ -7,9 +7,7 @@ public:
     untile_app(const utd::cmdline_args& args)
         : utd::application(args)
     {
-    #ifndef UTD_CONFIG_SHIP
         push_overlay(new utd::editor_layer());
-    #endif 
     }
 };
 

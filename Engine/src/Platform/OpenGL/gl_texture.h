@@ -29,7 +29,8 @@ namespace utd
         
     private:
         bool m_loaded = false;
-        std::uptr<std::string> m_path = nullptr;
         texture::specs m_specifications = {};
+        // Note: Probably not used while is being shipped
+        std::uptr<std::string> m_path = nullptr;
     };
 }

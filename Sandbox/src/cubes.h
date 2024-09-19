@@ -11,9 +11,6 @@
 
 #include <Engine/Core/resource_manager.h>
 
-class utd::event;
-class utd::shader;
-
 class cubes : public utd::layer
 {
 public:

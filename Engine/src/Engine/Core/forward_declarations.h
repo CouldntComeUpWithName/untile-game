@@ -21,6 +21,13 @@ namespace utd
     class multi_camera;
     class camera;
     class editor_camera;
+
+    // Events
+    class event;
+    class mouse_moved_event;
+    class mouse_scrolled_event;
+    class mouse_moved_event;
+
 }
 
 //STD

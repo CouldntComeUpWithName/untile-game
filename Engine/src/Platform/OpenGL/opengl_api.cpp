@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 #include <Engine/Graphics/vertex_array.h>
 
-void opengl_message_callback(utd::u32 source, utd::u32 type, utd::u32 id, utd::u32 severity, utd::i32 length, utd::cstring message, const void* user_program)
+static void opengl_message_callback(utd::u32 source, utd::u32 type, utd::u32 id, utd::u32 severity, utd::i32 length, utd::cstring message, const void* user_program)
 {
     switch (severity)
     {
@@ -16,6 +16,7 @@ void opengl_message_callback(utd::u32 source, utd::u32 type, utd::u32 id, utd::u
 
     UTD_ENGINE_ASSERT(false, "Unknown severity level!");
 }
+
 void utd::opengl_api::init()
 {
 #ifdef UTD_CONFIG_DEBUG

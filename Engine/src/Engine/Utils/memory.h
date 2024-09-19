@@ -104,27 +104,27 @@ namespace utd
     
     namespace diu // digital information unit
     {
-        constexpr size_t operator""_b(size_t val)noexcept
+        consteval size_t operator""_b(size_t val) noexcept
         {
             return val;
         }
         
-        constexpr size_t operator""_kb(long double val)noexcept
+        consteval size_t operator""_kb(long double val) noexcept
         {
             return static_cast<size_t>(val * 1024_b);
         }
 
-        constexpr size_t operator""_kb(size_t val)noexcept
+        consteval size_t operator""_kb(size_t val) noexcept
         {
             return val * 1024_b;
         }
 
-        constexpr size_t operator""_mb(long double val)noexcept
+        consteval size_t operator""_mb(long double val) noexcept
         {
             return static_cast<size_t>(val * 1024_kb);
         }
 
-        constexpr size_t operator""_mb(size_t val)noexcept
+        consteval size_t operator""_mb(size_t val) noexcept
         {
             return val * 1024_kb;
         }

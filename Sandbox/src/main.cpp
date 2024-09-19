@@ -16,10 +16,10 @@
 //         std::cout << "A is deleted" << std::endl; 
 //     }
 // };
-class Untile : public utd::application
+class Sandbox : public utd::application
 {
 public:
-    Untile(const utd::cmdline_args& args)
+    Sandbox(const utd::cmdline_args& args)
         : application(args)
     {
         push_layer(new cubes());
@@ -30,9 +30,9 @@ int main(int argc, char** argv)
 {
     utd::logging::init("Sandbox");
     
-    Untile app(utd::cmdline_args{argc, argv});
+    Sandbox app(utd::cmdline_args{argc, argv});
     
-    Untile::instance().run();
+    Sandbox::instance().run();
  
     return 0;
 }

@@ -46,7 +46,6 @@ namespace utd
         mouse_pressed_event(const mouse::code button)
             : mouse_event(button)
         { }
-
         UTD_EVENT_TYPE(event::type::MOUSE_BUTTON_PRESSED)
     private:
     };

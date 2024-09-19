@@ -19,7 +19,7 @@ namespace utd
             u32         width = {};
             u32        height = {};
             std::string title = {};
-            std::function<void(event&)> event_callback = nullptr;
+            event_callback_func event_callback = nullptr;
         };
 
     public:

@@ -3,6 +3,7 @@
 
 #include <Engine/Core/assert.h>
 #include <Engine/Graphics/renderer2d.h>
+#include <Engine/Profiling/profile.h>
 
 std::uptr<utd::graphics_api> utd::renderer::s_graphics_api;
 utd::graphics_api::type utd::renderer::s_api_type;
@@ -15,6 +16,13 @@ void utd::renderer::init(graphics_api::type _API)
     s_graphics_api->init();
 
     utd::renderer2d::init();
+}
+
+void utd::renderer::shutdown()
+{
+    UTD_PROFILE_FUNC();
+
+    renderer2d::shutdown();
 }
 
 void utd::renderer::command::viewport(u32 x, u32 y, u32 width, u32 height)

@@ -15,6 +15,7 @@ namespace utd
     class vertex_array
     {
     public:
+        // TODO: REMOVE
         enum primitive_type
         {
             POINTS,

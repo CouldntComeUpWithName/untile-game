@@ -131,7 +131,7 @@ void utd::glfw_window::init(u32 width, u32 height, const std::string& title, con
     {
         auto& props = *(properties*)glfwGetWindowUserPointer(window);
 
-        mouse_scrolled_event event(xoffset, yoffset);
+        mouse_scrolled_event event(static_cast<float>(xoffset), static_cast<float>(yoffset));
         props.event_callback(event);
 
     });

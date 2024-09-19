@@ -7,6 +7,8 @@
 
 #include<Engine/Graphics/Renderer2D.h>
 #include<Engine/Graphics/Texture.h>
+#include<Engine/Graphics/Renderer.h>
+#include<Engine/Scene/components.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,11 +18,14 @@
 
 void utd::editor_layer::on_attach()
 {
-    m_sand = m_texture_manager.fetch("sand", "E:/Programming/untile/Untile/assets/textures/sand_3.png");
-    m_grass = m_texture_manager.fetch("grass", "E:/Programming/untile/Untile/assets/textures/grass_2.png");
-    m_cobblestone = m_texture_manager.fetch("cobblestone", "E:/Programming/untile/Untile/assets/textures/cobblestone_1.png");
-}
+    m_sand = m_texture_manager.fetch("sand", "E:/Programming/untile/Sandbox/assets/textures/sand_3.png");
+    m_grass = m_texture_manager.fetch("grass", "E:/Programming/untile/Sandbox/assets/textures/grass_2.png");
+    m_cobblestone = m_texture_manager.fetch("cobblestone", "E:/Programming/untile/Sandbox/assets/textures/cobblestone_1.png");
 
+    m_framebuffer = framebuffer::create(1280, 720);
+    m_framebuffer->attach(framebuffer::attachment::RGBA8, 
+        framebuffer::attachment::RED_INT, framebuffer::attachment::DEPTH);
+}
 
 void utd::editor_layer::on_detach()
 {
@@ -50,8 +55,8 @@ void utd::editor_layer::_on_imgui_render()
     if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
         window_flags |= ImGuiWindowFlags_NoBackground;
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.01f, 0.01f));
+    ImGui::Begin("Menu Bar", &dockspaceOpen, window_flags);
     ImGui::PopStyleVar();
 
     if (opt_fullscreen)
@@ -73,7 +78,10 @@ void utd::editor_layer::_on_imgui_render()
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Open Project"));
+            if (ImGui::MenuItem("Open Project"))
+            {
+
+            }
             if (ImGui::MenuItem("Exit"))
             {
                 application::instance().close();
@@ -84,10 +92,42 @@ void utd::editor_layer::_on_imgui_render()
         {
             ImGui::EndMenu();
         }
-        ImGui::EndMenuBar();
     }
+    ImGui::EndMenuBar();
+    ImGui::End();
 
     ImGui::Begin("Cube Scene");                // Create a window called "Hello, world!" and append into it.
+
+    ImGui::End();
+
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.f, 0.f });
+    ImGui::Begin("Viewport");
+
+    m_viewport_hovered = ImGui::IsWindowHovered();
+    m_viewport_focused = ImGui::IsWindowFocused();
+    
+    m_framebuffer->bind();
+
+    utd::renderer::command::clear_color(glm::vec4{ 0.5f, 0.9f, 1.f, 1.f });
+    utd::renderer::command::clear();
+
+    const auto viewport_region = ImGui::GetContentRegionAvail();
+    m_editor_camera.viewport(viewport_region.x, viewport_region.y);
+
+    static utd::circle circle = { {0.f, 1.f, 1.f, 1.f}, m_cobblestone, glm::vec4{1.f, 0.f, 1.f, 1.f}, 0.0f };
+    
+    renderer2d::begin(m_editor_camera);
+    renderer2d::draw({ { 10.f,  0.f, -10.f }, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f} }, circle);
+    renderer2d::end();
+
+    auto tex_id = m_framebuffer->at(0);
+    ImGui::Image((void*)tex_id, viewport_region, { 0, 1 }, { 1, 0 });
+    m_framebuffer->unbind();
+    ImGui::End();
+    ImGui::PopStyleVar();
+
+    //ImGui::Image((void*)m_texture_manager.get("cobblestone").get_id(), size);
 
     //ImGui::Text("T");               // Display some text (you can use a format strings too)
 
@@ -140,7 +180,6 @@ void utd::editor_layer::_on_imgui_render()
 
     //ImGui::EndGroup();
 
-    ImGui::End();
 }
 
 void utd::editor_layer::on_render()
@@ -150,10 +189,12 @@ void utd::editor_layer::on_render()
 
 void utd::editor_layer::on_update(float dt)
 {
-    m_editor_camera.on_update(dt);
+    if(m_viewport_hovered)
+        m_editor_camera.on_update(dt);
 }
 
 void utd::editor_layer::on_event(utd::event& event)
 {
-    m_editor_camera.on_event(event);
+    if (m_viewport_hovered)
+        m_editor_camera.on_event(event);
 }

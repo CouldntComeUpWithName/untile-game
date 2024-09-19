@@ -6,12 +6,6 @@
 
 namespace utd
 {
-    class event;
-    class mouse_moved_event;
-    class mouse_scrolled_event;
-
-    class mouse_moved_event;
-    
     class camera
     {
     public:
@@ -129,7 +123,6 @@ namespace utd
         float m_orthographic_near = 100.f;
 
     };
-
 
     class editor_camera
     {

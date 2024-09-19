@@ -38,7 +38,7 @@ namespace utd
 	using ibyte = i8;
 	using word  = u16;
 	using dword = u32;
-	
+
 	using cstring = const char*;
 
 } /* namespace utd */

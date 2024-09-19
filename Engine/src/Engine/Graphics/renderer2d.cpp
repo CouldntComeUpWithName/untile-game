@@ -356,6 +356,13 @@ void utd::renderer2d::init()
     render_data::uniform_camera_buffer = std::make_unique<uniform_buffer>(static_cast<u32>(sizeof(glm::mat4)), 0u);
 }
 
+void utd::renderer2d::shutdown() noexcept
+{
+    delete[] render_data::circle_vertex_buffer_base;
+    delete[] render_data::quad_vertex_data_base;
+    delete[] render_data::line_vertex_buffer_base;
+}
+
 void utd::renderer2d::begin(const multi_camera &camera, const glm::mat4 &transform)
 {
     UTD_PROFILE_FUNC();
@@ -434,7 +441,6 @@ void utd::renderer2d::draw(const transform& transform, const circle& circle)
     }
 
     statistics.quad_drawn_count++;
-
 
 }
 

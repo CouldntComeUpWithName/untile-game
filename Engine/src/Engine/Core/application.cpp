@@ -120,13 +120,14 @@ void utd::application::on_event(event& event)
         layer->on_event(event);
     }
 
-    //UTD_ENGINE_INFO(event.str());
+    UTD_ENGINE_INFO(event.str());
 }
 
 void utd::application::close()
 {
     m_running = false;
 }
+
 // TODO: REMOVE THESE
 void utd::triangle()
 {
@@ -292,5 +293,3 @@ void utd::triangle()
         // ------------------------------------------------------------------
         glfwTerminate();
 }
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);

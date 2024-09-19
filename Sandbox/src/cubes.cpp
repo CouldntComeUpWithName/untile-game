@@ -190,17 +190,17 @@ void cubes::on_attach()
     //m_vertex_array.push_back(std::move(vb));
    
     
-    //m_texture_manager.load("cobblestone", "E:/Programming/untile/Untile/assets/textures/cobblestone_2.png");
-    //m_texture_manager.load("sand", "E:/Programming/untile/Untile/assets/textures/sand_3.png");
-    //m_texture_manager.load("grass", "E:/Programming/untile/Untile/assets/textures/grass_3.png");
+    //m_texture_manager.load("cobblestone", "E:/Programming/untile/Sandbox/assets/textures/cobblestone_2.png");
+    //m_texture_manager.load("sand", "E:/Programming/untile/Sandbox/assets/textures/sand_3.png");
+    //m_texture_manager.load("grass", "E:/Programming/untile/Sandbox/assets/textures/grass_3.png");
     
     /*glm::vec3 front;
     front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     front.y = sin(glm::radians(m_pitch));
     front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));*/
-    m_sand = m_texture_manager.fetch("sand", "E:/Programming/untile/Untile/assets/textures/sand_3.png");
-    m_grass = m_texture_manager.fetch("grass", "E:/Programming/untile/Untile/assets/textures/grass_2.png");
-    m_cobblestone = m_texture_manager.fetch("cobblestone", "E:/Programming/untile/Untile/assets/textures/cobblestone_1.png");
+    m_sand = m_texture_manager.fetch("sand", "E:/Programming/untile/Sandbox/assets/textures/sand_3.png");
+    m_grass = m_texture_manager.fetch("grass", "E:/Programming/untile/Sandbox/assets/textures/grass_2.png");
+    m_cobblestone = m_texture_manager.fetch("cobblestone", "E:/Programming/untile/Sandbox/assets/textures/cobblestone_1.png");
     
     //m_front = glm::normalize(front);
     m_right = glm::normalize(glm::cross(m_front, m_up));
@@ -246,8 +246,7 @@ void cubes::on_detach()
 
 void cubes::on_render()
 {
-
-    static auto drawing = utd::sprite{m_texture_manager.fetch("drawing", "E:/Programming/untile/Untile/assets/textures/drawing.png")};
+    static auto drawing = utd::sprite{m_texture_manager.fetch("drawing", "E:/Programming/untile/Sandbox/assets/textures/drawing.png")};
     static auto image = utd::image::load(m_texture_manager.get("drawing").path());
     
     auto& io = ImGui::GetIO();
@@ -318,15 +317,12 @@ void cubes::on_render()
 
     ImGui::EndGroup();
 
-
     ImGui::End();
     
     if (visible)
     {
         //utd::renderer::command::depth_buffer(true);
         static utd::circle circle = { {0.f, 1.f, 1.f, 1.f}, m_cobblestone, glm::vec4{1.f, 0.f, 1.f, 1.f}, 0.0f };
-        
-        utd::transform{};
         
         //m_texture_shader->bind();
 

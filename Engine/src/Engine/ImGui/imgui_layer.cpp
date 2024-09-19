@@ -69,9 +69,9 @@ void utd::imgui_layer::on_detach()
 
 void utd::imgui_layer::on_event(event& event)
 {
-    ImGuiIO& io = ImGui::GetIO();
-    event.handled |= (event.get_category() == event::category::MOUSE) & io.WantCaptureMouse;
-    event.handled |= (event.get_category() == event::category::KEYBOARD) & io.WantCaptureKeyboard;
+    //ImGuiIO& io = ImGui::GetIO();
+    //event.handled |= (event.get_category() == event::category::MOUSE) & io.WantCaptureMouse;
+    //event.handled |= (event.get_category() == event::category::KEYBOARD) & io.WantCaptureKeyboard;
 }
 
 void utd::imgui_layer::begin() const
@@ -92,7 +92,7 @@ void utd::imgui_layer::begin() const
 
 void utd::imgui_layer::end() const
 {
-    UTD_PROFILE_FUNC(profile::color::darkcyan);
+    UTD_PROFILE_FUNC();
 
 #if !defined(UTD_CONFIG_SHIP) && UTD_IMGUI_DISABLE == 0
     ImGui::Render();
@@ -169,7 +169,7 @@ void utd::triangle_layer::on_attach()
 
     
 
-    m_shader = utd::shader::load("E:/Programming/untile/Untile/assets/shaders/triangle.vert", "E:/Programming/untile/Untile/assets/shaders/triangle.frag");
+    m_shader = utd::shader::load("E:/Programming/untile/Sandbox/assets/shaders/triangle.vert", "E:/Programming/untile/Sandbox/assets/shaders/triangle.frag");
     
     std::uptr<vertex_buffer> vb = std::make_unique<vertex_buffer>(vertices, static_cast<u32>(sizeof(vertices)));
     vb->set_layout

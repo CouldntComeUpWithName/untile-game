@@ -3,7 +3,8 @@
 #include <Engine/Core/layer.h>
 #include <Engine/Core/resource_manager.h>
 #include <Engine/Graphics/camera.h>
-#include <Engine/Graphics/texture.h>
+#include <Engine/Graphics/Texture.h>
+#include <Engine/Graphics/Framebuffer.h>
 
 namespace utd
 {
@@ -22,8 +23,15 @@ namespace utd
         utd::ref_ptr<utd::texture> m_cobblestone;
         utd::ref_ptr<utd::texture> m_grass;
         utd::ref_ptr<utd::texture> m_sand;
+        
         utd::editor_camera m_editor_camera;
-
+        
+        std::uptr<utd::framebuffer> m_framebuffer;
+        
         texture_pack m_texture_manager;
+
+        bool m_viewport_hovered = false;
+        bool m_viewport_focused = false;
+
     };
 }

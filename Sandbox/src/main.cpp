@@ -33,7 +33,9 @@ int main(int argc, char** argv)
     Sandbox app(utd::cmdline_args{argc, argv});
     
     Sandbox::instance().run();
- 
+    
+    UTD_TRACE_IF(true, "Hello");
+
     return 0;
 }
 

@@ -31,8 +31,21 @@ namespace utd
 #define UTD_ENGINE_ERROR(...) ::utd::logging::get_engine_logger()->error(__VA_ARGS__)
 #define UTD_ENGINE_FATAL(...) ::utd::logging::get_engine_logger()->critical(__VA_ARGS__)
 
+#ifdef UTD_ENGINE
+    #define UTD_TRACE_IF(condition, ...) if((condition)) ::utd::logging::get_engine_logger()->info(__VA_ARGS__)
+    #define UTD_WARN_IF(condition, ...) if((condition)) ::utd::logging::get_engine_logger()->warn(__VA_ARGS__)
+    #define UTD_ERROR_IF(condition, ...) if((condition)) ::utd::logging::get_engine_logger()->error(__VA_ARGS__)
+    #define UTD_FATAL_IF(condition, ...) if((condition)) ::utd::logging::get_engine_logger()->critical(__VA_ARGS__)
+#else
+    #define UTD_TRACE_IF(condition, ...) if((condition)) ::utd::logging::get_client_logger()->info(__VA_ARGS__)
+    #define UTD_WARN_IF(condition, ...) if((condition)) ::utd::logging::get_client_logger()->warn(__VA_ARGS__)
+    #define UTD_ERROR_IF(condition, ...) if((condition)) ::utd::logging::get_client_logger()->error(__VA_ARGS__)
+    #define UTD_FATAL_IF(condition, ...) if((condition)) ::utd::logging::get_client_logger()->critical(__VA_ARGS__)
+#endif
+
 #if UTD_CONFIG_DEBUG
     #define UTD_ENGINE_DEBUG(...) ::utd::logging::get_engine_logger()->info(__VA_ARGS__)
+    #define UTD_DEBUG_IF(condition, ...) if({condition}) ::utd::logging::get_engine_logger()->info(__VA_ARGS__)
 #else
     #define UTD_ENGINE_DEBUG(...)
 #endif

@@ -15,7 +15,12 @@ namespace utd
         using const_reverse_iterator = std::vector<layer*>::const_reverse_iterator;
     public:
         layer_stack() = default;
-        ~layer_stack() {};
+        
+        ~layer_stack()
+        {
+            for (auto* layer : m_stack)
+                delete layer;
+        }
 
         void push(layer*);
         void pop(layer*);

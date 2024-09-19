@@ -10,10 +10,9 @@
 #include <Engine/Graphics/shader.h>
 #include <Engine/Graphics/vertex_array.h>
 
-#define UTD_IMGUI_DISABLE 0
-
 namespace utd
 {   
+    
     class imgui_layer : public layer
     {
     public:

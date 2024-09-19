@@ -32,12 +32,10 @@ namespace utd
 
         bool is_repeated() const { return m_repeated; }
         UTD_EVENT_TYPE(event::type::KEY_PRESSED)
-
         
     private:
         bool m_repeated;
     };
-
 
     class key_released_event : public key_event
     {

@@ -19,7 +19,7 @@ namespace utd
             u32         width = {};
             u32        height = {};
             std::string title = {};
-            std::function<void(event&)> event_callback = nullptr;
+            event_callback_func event_callback = nullptr;
         };
 
     public:
@@ -27,7 +27,10 @@ namespace utd
 
         virtual void show_cursor(bool = true) = 0;
         virtual bool cursor_disabled()      = 0;
-        virtual void* native_handle()       = 0;
+        
+        template<typename t_native = void>
+        t_native* native_handle() { return static_cast<t_native*>(m_handle); }
+        
         virtual bool opened()               = 0; 
         virtual bool vsync()                = 0;
         virtual glm::vec2 size()            = 0;
@@ -47,6 +50,10 @@ namespace utd
     public:
         static std::uptr<window> create(u32, u32, const std::string&);
         static std::uptr<window> create(const properties&);
+
+    protected:
+        void* m_handle;
+
     };
 
 } /* namespace utd */

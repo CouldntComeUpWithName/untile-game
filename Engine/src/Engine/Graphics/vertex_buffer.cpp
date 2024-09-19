@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 
 #include <Engine/Graphics/vertex_attrib.h>
+#include <Engine/Profiling/profile.h>
 
 utd::vertex_buffer::vertex_buffer(u32 size)
     : m_id(0)
@@ -38,7 +39,9 @@ void utd::vertex_buffer::unbind() const
 
 void utd::vertex_buffer::set_data(const void* data, u32 size)
 {
-    this->bind();
+    UTD_PROFILE_FUNC();
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_id);
     glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 }
 

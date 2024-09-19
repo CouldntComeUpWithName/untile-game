@@ -29,18 +29,17 @@ utd::imgui_layer::imgui_layer(const std::string &name)
 
 void utd::imgui_layer::on_attach()
 {
+    UTD_PROFILE_FUNC(utd::profile::color::deepred);
+    
     IMGUI_CHECKVERSION();
     
-    UTD_PROFILE_FUNC(utd::profile::color::deepred);
-
     ImGui::CreateContext();
     
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-
+    
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsLight();
 
@@ -53,7 +52,7 @@ void utd::imgui_layer::on_attach()
     }
 
     auto& window = singleton<application>::instance().get_window();
-    ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)window.native_handle(), true);
+    ImGui_ImplGlfw_InitForOpenGL(window.native_handle<GLFWwindow>(), true);
 #ifdef __EMSCRIPTEN__
     ImGui_ImplGlfw_InstallEmscriptenCanvasResizeCallback("#canvas");
 #endif
@@ -70,28 +69,30 @@ void utd::imgui_layer::on_detach()
 
 void utd::imgui_layer::on_event(event& event)
 {
-    ImGuiIO& io = ImGui::GetIO();
-    event.handled |= (event.get_category() == event::category::MOUSE) & io.WantCaptureMouse;
-    event.handled |= (event.get_category() == event::category::KEYBOARD) & io.WantCaptureKeyboard;
+    //ImGuiIO& io = ImGui::GetIO();
+    //event.handled |= (event.get_category() == event::category::MOUSE) & io.WantCaptureMouse;
+    //event.handled |= (event.get_category() == event::category::KEYBOARD) & io.WantCaptureKeyboard;
 }
 
 void utd::imgui_layer::begin() const
 {
+//#if !defined(UTD_CONFIG_SHIP) && UTD_IMGUI_DISABLE == 0
+
     UTD_PROFILE_FUNC(profile::color::lightcyan);
 
-#if !defined(UTD_CONFIG_SHIP) && UTD_IMGUI_DISABLE == 0
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     UTD_PROFILE_BEGIN("ImGui::NewFrame")
     ImGui::NewFrame();
     UTD_PROFILE_END();
-#endif
+
+//#endif
     //ZoneNamedN(setupzone, "ImGui begin", true);
 }
 
 void utd::imgui_layer::end() const
 {
-    UTD_PROFILE_FUNC(profile::color::darkcyan);
+    UTD_PROFILE_FUNC();
 
 #if !defined(UTD_CONFIG_SHIP) && UTD_IMGUI_DISABLE == 0
     ImGui::Render();
@@ -168,9 +169,9 @@ void utd::triangle_layer::on_attach()
 
     
 
-    m_shader = utd::shader::load("E:/Programming/untile/Untile/assets/shaders/triangle.vert", "E:/Programming/untile/Untile/assets/shaders/triangle.frag");
+    m_shader = utd::shader::load("E:/Programming/untile/Sandbox/assets/shaders/triangle.vert", "E:/Programming/untile/Sandbox/assets/shaders/triangle.frag");
     
-    std::uptr<vertex_buffer> vb = std::make_unique<vertex_buffer>(vertices, sizeof(vertices));
+    std::uptr<vertex_buffer> vb = std::make_unique<vertex_buffer>(vertices, static_cast<u32>(sizeof(vertices)));
     vb->set_layout
     ({
         { shader::data_type::FLOAT3, "aPos" },
@@ -268,7 +269,7 @@ void utd::triangle_layer::on_render()
 
     if(visible)
     {
-        utd::renderer::draw_indexed(m_vertex_array, 6);
+        utd::renderer::command::draw_indexed(m_vertex_array, 6);
         /*glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);*/
     }
@@ -283,7 +284,7 @@ void utd::triangle_layer::on_update(float dt)
     
     m_shader->bind();
     UTD_PROFILE_SCOPE(UTD_CONCAT(__FUNCTION__, " shader values setting"), profile::color::lightred);
-    m_shader->set_float4("triangle_color", color);
-    m_shader->set_float("offset", accumulator);
+    m_shader->vec4("triangle_color", color);
+    m_shader->real("offset", accumulator);
 
 }

@@ -19,7 +19,6 @@ namespace utd
     private:
         void _on_imgui_render();
     private:
-        bool visible = true;
         utd::ref_ptr<utd::texture> m_cobblestone;
         utd::ref_ptr<utd::texture> m_grass;
         utd::ref_ptr<utd::texture> m_sand;

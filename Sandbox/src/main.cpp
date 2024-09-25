@@ -3,19 +3,7 @@
 #include <UntiledEngine.h>
 #include "cubes.h"
 #include <map>
-// struct A
-// {
-//     A() 
-//     { 
-//         UTD_ASSERT(!utd::singleton<A>::instance(), "Instance already exists")
-//         std::cout << "A is created" << std::endl; 
-//     }
-//     ~A() 
-//     { 
-//         utd::singleton<A>::instance() = nullptr;
-//         std::cout << "A is deleted" << std::endl; 
-//     }
-// };
+
 class Sandbox : public utd::application
 {
 public:

@@ -34,15 +34,15 @@ void utd::glfw_window::init(u32 width, u32 height, const std::string& title, con
     #endif
         UTD_ENGINE_ASSERT(status, "Can\'t initialize GLFW");
     }
-    UTD_ENGINE_INFO("glfw is initialized");
+    UTD_INFO("glfw is initialized");
 
     m_handle = glfwCreateWindow(width, height, m_properties.title.c_str(), nullptr, nullptr);
     s_glfw_window_counter++;
-    UTD_ENGINE_INFO("Window is created");
+    UTD_INFO("Window is created");
 
     m_context = graphics_context::create();
     m_context->init(m_handle);
-    UTD_ENGINE_INFO("Graphics context has been initialized");
+    UTD_INFO("Graphics context has been initialized");
 
     glfwSetWindowUserPointer(native_handle(), &m_properties);
     glfwSetInputMode(native_handle(), GLFW_STICKY_KEYS, GLFW_TRUE);
@@ -136,7 +136,7 @@ void utd::glfw_window::init(u32 width, u32 height, const std::string& title, con
 
     });
 
-    UTD_ENGINE_INFO("Callbacks are set");
+    UTD_INFO("Callbacks are set");
 }
 
 void utd::glfw_window::init(const properties& props, const event_callback_func&)

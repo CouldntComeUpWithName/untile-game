@@ -16,7 +16,7 @@ void utd::framebuffer::resize(u32 width, u32 height)
     
     if (width == 0 || height == 0 || width > MAX_WIDTH || height > MAX_HEIGHT)
     {
-        UTD_ENGINE_WARN("An attempt to resize framebuffer to {0}, {1}", width, height);
+        UTD_WARN("An attempt to resize framebuffer to {0}, {1}", width, height);
         return;
     }
     

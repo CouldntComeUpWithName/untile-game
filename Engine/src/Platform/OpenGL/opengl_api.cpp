@@ -8,10 +8,10 @@ static void opengl_message_callback(utd::u32 source, utd::u32 type, utd::u32 id,
 {
     switch (severity)
     {
-    case GL_DEBUG_SEVERITY_HIGH:         UTD_ENGINE_FATAL(message); return;
-    case GL_DEBUG_SEVERITY_MEDIUM:       UTD_ENGINE_ERROR(message); return;
-    case GL_DEBUG_SEVERITY_LOW:          UTD_ENGINE_WARN(message); return;
-    case GL_DEBUG_SEVERITY_NOTIFICATION: UTD_ENGINE_INFO(message); return;
+    case GL_DEBUG_SEVERITY_HIGH:         UTD_FATAL(message); return;
+    case GL_DEBUG_SEVERITY_MEDIUM:       UTD_ERROR(message); return;
+    case GL_DEBUG_SEVERITY_LOW:          UTD_WARN(message); return;
+    case GL_DEBUG_SEVERITY_NOTIFICATION: UTD_INFO(message); return;
     }
 
     UTD_ENGINE_ASSERT(false, "Unknown severity level!");

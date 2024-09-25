@@ -24,7 +24,7 @@ namespace utd
     public:
         virtual ~texture()
         {
-            UTD_ENGINE_DEBUG(__FUNCTION__ " for resource ID{0} {1}", m_id, "has been called");
+            UTD_DEBUG(__FUNCTION__ " for resource ID{0} {1}", m_id, "has been called");
         }
         texture() = default;
         virtual const specs& get_specs() = 0;

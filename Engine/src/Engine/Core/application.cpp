@@ -15,7 +15,7 @@
 #include <Engine/Events/application_event.h>
 #include <Platform/Common/System/clock.h>
 
-#include <Engine/Graphics/Renderer.h>
+#include <Engine/Graphics/renderer.h>
 #include <Engine/Graphics/Shader.h>
 #include <Engine/Graphics/Texture.h>
 
@@ -29,13 +29,13 @@
 utd::application::application(const cmdline_args &)
     : m_running(true)
 { 
-    UTD_ENGINE_ASSERT(!application::exists(), "Application already exists");
+    UTD_ASSERT(!application::exists(), "Application already exists");
     singleton::init(this);
 
     m_window = window::create(1280, 720, "Untile");
     m_window->callback([this](event& e){ on_event(e); });
     
-    UTD_ENGINE_ASSERT(m_window, "window is null");
+    UTD_ASSERT(m_window, "native window handle is null");
     
     renderer::init();
     
@@ -120,7 +120,7 @@ void utd::application::on_event(event& event)
         layer->on_event(event);
     }
 
-    UTD_ENGINE_INFO(event.str());
+    // UTD_INFO(event.str());
 }
 
 void utd::application::close()

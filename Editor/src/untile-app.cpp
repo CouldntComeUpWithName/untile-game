@@ -7,6 +7,7 @@ public:
     untile_app(const utd::cmdline_args& args)
         : utd::application(args)
     {
+        UTD_INFO("Creating an app");
         push_overlay(new utd::editor_layer());
     }
 };

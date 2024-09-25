@@ -136,7 +136,7 @@ void utd::gl_shader::source(const std::string& vert_source, const std::string& f
 	{
 		i8 info[512];
 		glGetShaderInfoLog(vertex, 512, nullptr, info);
-		UTD_ENGINE_ERROR("Vertex shader compilation failed: {0}", info);
+		UTD_ERROR("Vertex shader compilation failed: {0}", info);
 	}
 
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
@@ -150,7 +150,7 @@ void utd::gl_shader::source(const std::string& vert_source, const std::string& f
 	{
 		i8 info[512];
 		glGetShaderInfoLog(fragment, 512, nullptr, info);
-		UTD_ENGINE_ERROR("Fragment shader compilation failed: {0}", info);
+		UTD_ERROR("Fragment shader compilation failed: {0}", info);
 	}
 
 	m_id = glCreateProgram();
@@ -166,7 +166,7 @@ void utd::gl_shader::source(const std::string& vert_source, const std::string& f
 	{
 		i8 info[512];
 		glGetProgramInfoLog(m_id, 512, nullptr, info);
-		UTD_ENGINE_ERROR("Shader linkage failed: {0}", info);
+		UTD_ERROR("Shader linkage failed: {0}", info);
 	}
 
 	glDeleteShader(vertex);
@@ -224,7 +224,7 @@ void utd::gl_shader::_filepath(const std::filesystem::path &vert_path, const std
 	{
 		char info[512];
 		glGetShaderInfoLog(vertex, 512, nullptr, info);
-		UTD_ENGINE_ERROR("Vertex shader compilation failed: {0}", info);
+		UTD_ERROR("Vertex shader compilation failed: {0}", info);
 	}
 
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
@@ -238,7 +238,7 @@ void utd::gl_shader::_filepath(const std::filesystem::path &vert_path, const std
 	{
 		char info[512];
 		glGetShaderInfoLog(fragment, 512, nullptr, info);
-		UTD_ENGINE_ERROR("Fragment shader compilation failed: {0}", info);
+		UTD_ERROR("Fragment shader compilation failed: {0}", info);
 	}
 
 	m_id = glCreateProgram();
@@ -254,7 +254,7 @@ void utd::gl_shader::_filepath(const std::filesystem::path &vert_path, const std
 	{
 		i8 info[512];
 		glGetProgramInfoLog(m_id, 512, nullptr, info);
-		UTD_ENGINE_ERROR("Shader linkage failed: {0}", info);
+		UTD_ERROR("Shader linkage failed: {0}", info);
 	}
 
 	glDeleteShader(vertex);

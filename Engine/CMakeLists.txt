@@ -7,6 +7,7 @@ add_library(stb INTERFACE)
 include_directories(extern/spdlog/include)
 include_directories(extern/imgui extern/imgui/backends)
 
+target_compile_definitions(Untiled PRIVATE UTD_ENGINE)
 target_include_directories(Untiled PUBLIC extern/glad/include)
 target_include_directories(Untiled PUBLIC src)
 target_include_directories(Untiled PUBLIC extern/stb)

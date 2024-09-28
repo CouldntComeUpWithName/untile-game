@@ -21,8 +21,8 @@ void utd::editor_layer::on_attach()
     m_sand = m_texture_manager.fetch("sand", "E:/Programming/untile/Sandbox/assets/textures/sand_3.png");
     m_grass = m_texture_manager.fetch("grass", "E:/Programming/untile/Sandbox/assets/textures/grass_2.png");
     m_cobblestone = m_texture_manager.fetch("cobblestone", "E:/Programming/untile/Sandbox/assets/textures/cobblestone_1.png");
-
-    m_framebuffer = framebuffer::create(1280, 720);
+    
+    m_framebuffer = framebuffer::create(1920, 1080);
     m_framebuffer->attach(framebuffer::attachment::RGBA8, 
         framebuffer::attachment::RED_INT, framebuffer::attachment::DEPTH);
 }

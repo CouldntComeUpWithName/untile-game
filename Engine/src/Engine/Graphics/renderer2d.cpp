@@ -388,11 +388,6 @@ void utd::renderer2d::end()
     flush();
 }
 
-// void utd::renderer2d::draw(const triangle &rect)
-// {
-
-// }
-
 void utd::renderer2d::draw(const transform& transform, const circle& circle)
 {
     UTD_PROFILE_FUNC();

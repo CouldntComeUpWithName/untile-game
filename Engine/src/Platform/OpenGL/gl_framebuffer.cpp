@@ -53,9 +53,9 @@ void utd::gl_framebuffer::_attach()
     {
         m_attachment_ids.resize(m_formats.size());
         
-        glCreateTextures(detail::texture_target(multisample), m_attachment_ids.size(), m_attachment_ids.data());
+        glCreateTextures(detail::texture_target(multisample), static_cast<GLsizei>(m_attachment_ids.size()), m_attachment_ids.data());
         
-        for (size_t i = 0; i < m_attachment_ids.size(); i++)
+        for (int i = 0; i < m_attachment_ids.size(); i++)
         {
             glBindTexture(detail::texture_target(multisample), m_attachment_ids[i]);
             switch (m_formats[i])
@@ -74,17 +74,18 @@ void utd::gl_framebuffer::_attach()
     }
 
     // TODO: review this later
-    if (m_attachment_ids.size() > 1)
+    if (m_attachment_ids.size() > 1u)
     {
         UTD_ENGINE_ASSERT(m_attachment_ids.size() <= 4);
         GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-        glDrawBuffers(m_attachment_ids.size() - _has_depth(), buffers);
+        glDrawBuffers(static_cast<GLsizei>(m_attachment_ids.size()) - _has_depth(), buffers);
     }
     else if (_has_depth_only())
     {
         glDrawBuffer(GL_NONE);
     }
-    UTD_ENGINE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
+
+    UTD_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
     
     glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 }
@@ -117,7 +118,7 @@ utd::u32 utd::gl_framebuffer::_at(int index) const
 void utd::gl_framebuffer::_release()
 {
     glDeleteFramebuffers(1, &m_id);
-    glDeleteTextures(m_attachment_ids.size(), m_attachment_ids.data());
+    glDeleteTextures(static_cast<GLsizei>(m_attachment_ids.size()), m_attachment_ids.data());
    
     m_attachment_ids.clear();
     m_id = 0;

@@ -120,7 +120,7 @@ void utd::application::on_event(event& event)
         layer->on_event(event);
     }
     
-    UTD_TRACE_IF(true, event.str());
+    UTD_TRACE_IF(false, event.str());
 }
 
 void utd::application::close()

@@ -130,6 +130,7 @@ namespace utd
         editor_camera()
         {
             _update_projection();
+            _update_view();
         }
 
         void position(const glm::vec3& pos) { m_position = pos; }

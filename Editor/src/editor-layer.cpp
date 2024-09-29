@@ -32,13 +32,7 @@ void utd::editor_layer::on_attach()
     m_character_atlas = utd::atlas(64, 64, m_texture_manager.fetch("redhat", "E:/Programming/untile/Sandbox/assets/textures/redhat.png"));
     
     for(int i = 0; i < m_character_atlas.rows(); i++)
-        for(int j = 0; j < m_character_atlas.columns(); j++)
-        {
-
-        }
-            
-        for(int i = 0; i < m_character_atlas.rows(); i++)
-            m_character_atlas.add(i, 1);
+        m_character_atlas.add(i, 1);
 
 }
 
@@ -215,7 +209,7 @@ void utd::editor_layer::on_render()
 
 void utd::editor_layer::on_update(float dt)
 {
-    if(m_viewport_hovered)
+    if(m_viewport_hovered && m_viewport_focused)
         m_editor_camera.on_update(dt);
 }
 

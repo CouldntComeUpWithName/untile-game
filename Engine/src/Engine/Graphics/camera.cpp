@@ -15,7 +15,7 @@
 utd::camera::camera(const glm::vec3 &start_position, const glm::mat4 &projection)
     : m_position(start_position), m_projection(projection),
       m_view(1.f), m_view_projection(m_projection * m_view)
-{ }
+{ _update_view(); }
 
 // void utd::camera::on_event(event& event)
 // {
@@ -269,12 +269,12 @@ void utd::editor_camera::on_update(float dt)
     auto mouse = input::get_mouse_pos();
     auto delta = (mouse - m_inital_mouse_position) * 0.005f;
     m_inital_mouse_position = mouse;
+    auto forward = front();
 
     if (input::is_mouse_button_pressed(mouse::LEFT_BUTTON))
     {
        _mouse_pan(delta);
     }
-    auto forward = front();
     if (input::is_key_pressed(key::W))
     {
         m_position += speed * front();
@@ -293,8 +293,6 @@ void utd::editor_camera::on_update(float dt)
         m_position += right() * speed;
     }
     _update_view();
-
-    UTD_PROFILE_SCOPE("LookAt");
 }
 
 void utd::editor_camera::on_event(event& event)

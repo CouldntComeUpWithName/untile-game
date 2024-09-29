@@ -8,6 +8,7 @@
 #include<Engine/Graphics/Renderer2D.h>
 #include<Engine/Graphics/Texture.h>
 #include<Engine/Graphics/Renderer.h>
+
 #include<Engine/Scene/components.h>
 
 #include <glm/glm.hpp>
@@ -15,6 +16,8 @@
 
 #include <imgui.h>
 #include <string>
+#include <chrono>
+#include <thread>
 
 void utd::editor_layer::on_attach()
 {
@@ -25,6 +28,18 @@ void utd::editor_layer::on_attach()
     m_framebuffer = framebuffer::create(1920, 1080);
     m_framebuffer->attach(framebuffer::attachment::RGBA8, 
         framebuffer::attachment::RED_INT, framebuffer::attachment::DEPTH);
+
+    m_character_atlas = utd::atlas(64, 64, m_texture_manager.fetch("redhat", "E:/Programming/untile/Sandbox/assets/textures/redhat.png"));
+    
+    for(int i = 0; i < m_character_atlas.rows(); i++)
+        for(int j = 0; j < m_character_atlas.columns(); j++)
+        {
+
+        }
+            
+        for(int i = 0; i < m_character_atlas.rows(); i++)
+            m_character_atlas.add(i, 1);
+
 }
 
 void utd::editor_layer::on_detach()
@@ -114,12 +129,23 @@ void utd::editor_layer::_on_imgui_render()
 
     const auto viewport_region = ImGui::GetContentRegionAvail();
     m_editor_camera.viewport(viewport_region.x, viewport_region.y);
-
-    static utd::circle circle = { {0.f, 1.f, 1.f, 1.f}, m_cobblestone, glm::vec4{1.f, 0.f, 1.f, 1.f}, 0.0f };
+    
+    static int i = 0;
+    static time gt = utd::clock::now();
     
     renderer2d::begin(m_editor_camera);
-    renderer2d::draw({ { 10.f,  0.f, -10.f }, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f} }, circle);
+    renderer2d::draw(m_character_atlas[i % m_character_atlas.count()], utd::transform{});
+    renderer2d::draw(utd::transform{{3.5f, 0.f, 0.f,}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f}}, utd::sprite{m_texture_manager.get("redhat")});
     renderer2d::end();
+
+    static clock clock;
+    using namespace utd::literals;
+    
+    if(clock.elapsed() >= 100_ms)
+    {
+        i++;
+        clock.reset();
+    }
 
     auto tex_id = m_framebuffer->at(0);
     ImGui::Image((void*)tex_id, viewport_region, { 0, 1 }, { 1, 0 });

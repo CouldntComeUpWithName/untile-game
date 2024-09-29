@@ -34,6 +34,7 @@ namespace utd
         static void draw(const transform& transform, const circle& circle);
         static void draw(const transform& transform, const sprite& sprite);
         static void draw(const transform& transform, const render_string& rstring);
+        static void draw(const sub_texture& subtexture, const transform& transform);
         
         //TODO: consider deleteting that sh*t
         template<typename t_primitive, typename... _args>

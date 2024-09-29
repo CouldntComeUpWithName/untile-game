@@ -9,6 +9,7 @@
 #include <Engine/Graphics/vertex_attrib.h>
 #include <Engine/Graphics/camera.h>
 #include <Engine/Graphics/uniform_buffer.h>
+#include <Engine/Graphics/atlas.h>
 
 #include <Engine/Scene/components.h>
 
@@ -488,6 +489,64 @@ void utd::renderer2d::draw(const transform &transform, const sprite &sprite)
 
     statistics.quad_drawn_count++;
 
+}
+
+void utd::renderer2d::draw(const sub_texture &subtexture, const transform &transform)
+{
+    UTD_PROFILE_FUNC();
+    auto bounds = subtexture.get_rect();
+
+    glm::vec2 tex_coords[4]
+    {
+        {bounds.u, bounds.v}, {bounds.width, bounds.v},
+        {bounds.width, bounds.height}, {bounds.u, bounds.height}
+    };
+
+    float index = 0.f;
+    if(subtexture.get_texture())
+    {
+        for(u32 i = 1u; i < render_data::texture_slot_index; i++)
+        {
+            if(render_data::texture_slots[i].get() == subtexture.get_texture().get())
+            {
+                index = static_cast<float>(i);
+                break;
+            }
+            if (render_data::texture_slots[i]->get_id() != -1)
+            {
+                index = 0.f;
+            }
+        }
+
+        if(index == 0.f)
+        {
+            if (render_data::texture_slot_index == render_data::MAX_TEXTURE_UNITS)
+            {
+                restart_batch();
+            }
+            else
+            {
+                index = static_cast<float>(render_data::texture_slot_index);
+                render_data::texture_slots[render_data::texture_slot_index] = subtexture.get_texture();
+                render_data::texture_slot_index++;
+            }
+
+        }
+        
+    }
+    
+    for (u32 i = 0; i < render_data::QUAD_VERTICES; i++)
+    {
+        render_data::quad_vertex_data_iter->position = transform::get(transform) * render_data::QUAD_VERTEX_POSITIONS[i];
+        render_data::quad_vertex_data_iter->color = {1.f, 1.f, 1.f, 1.f};
+        render_data::quad_vertex_data_iter->tiling = 1.f;
+        render_data::quad_vertex_data_iter->texture_index = index;
+        render_data::quad_vertex_data_iter->tex_coord = tex_coords[i];
+
+        render_data::quad_vertex_data_iter++;
+    }
+
+    statistics.quad_drawn_count++;
 }
 
 void utd::renderer2d::start_batch()

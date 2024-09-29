@@ -41,13 +41,16 @@ namespace utd
         sub_texture& add(int origin_x, int origin_y, int width_multipier = 1, int height_multipier = 1);
         
         inline size_t count() { return m_tile_data.size(); };
-       
+        
+        size_t rows() const;
+        size_t columns() const;
+
         inline sub_texture& operator[](int index) {return m_tile_data[index]; }
         inline const sub_texture& operator[](int index) const {return m_tile_data[index]; }
     public:
 
     private:
-        struct 
+        struct
         {
             int width  = 0;
             int height = 0;

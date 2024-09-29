@@ -26,3 +26,13 @@ utd::sub_texture& utd::atlas::add(int origin_x, int origin_y, int width_multipie
     m_tile_data.push_back(sub_texture(bounds, m_original_texture));
     return m_tile_data.back();
 }
+
+size_t utd::atlas::rows() const
+{
+    return m_original_texture->width() / m_tile_unit_size.width;
+}
+
+size_t utd::atlas::columns() const
+{
+    return m_original_texture->height() / m_tile_unit_size.height;
+}

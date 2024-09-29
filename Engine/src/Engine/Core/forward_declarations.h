@@ -9,7 +9,8 @@ namespace utd
     class shader;
     class window;
     class buffer;
-    
+    class sub_texture;
+
     struct transform;
     struct line;
     struct circle;

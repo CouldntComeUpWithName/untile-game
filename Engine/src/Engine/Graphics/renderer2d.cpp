@@ -476,7 +476,8 @@ void utd::renderer2d::draw(const transform &transform, const sprite &sprite)
         }
         
     }
-    
+
+    UTD_PROFILE_BEGIN("renderer2d - sprite copying vertex data");
     for (u32 i = 0; i < render_data::QUAD_VERTICES; i++)
     {
         render_data::quad_vertex_data_iter->position = transform::get(transform) * render_data::QUAD_VERTEX_POSITIONS[i];
@@ -486,6 +487,7 @@ void utd::renderer2d::draw(const transform &transform, const sprite &sprite)
 
         render_data::quad_vertex_data_iter++;
     }
+    UTD_PROFILE_END("renderer2d - sprite copying vertex data");
 
     statistics.quad_drawn_count++;
 
@@ -535,6 +537,7 @@ void utd::renderer2d::draw(const sub_texture &subtexture, const transform &trans
         
     }
     
+    UTD_PROFILE_BEGIN("renderer2d - copying vertex data");
     for (u32 i = 0; i < render_data::QUAD_VERTICES; i++)
     {
         render_data::quad_vertex_data_iter->position = transform::get(transform) * render_data::QUAD_VERTEX_POSITIONS[i];
@@ -545,6 +548,7 @@ void utd::renderer2d::draw(const sub_texture &subtexture, const transform &trans
 
         render_data::quad_vertex_data_iter++;
     }
+    UTD_PROFILE_END("renderer2d - copying vertex data");
 
     statistics.quad_drawn_count++;
 }

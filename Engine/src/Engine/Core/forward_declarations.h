@@ -3,7 +3,7 @@
 //UTD
 namespace utd
 {
-    class entity;
+    class scene;
     class texture;
     class image;
     class shader;

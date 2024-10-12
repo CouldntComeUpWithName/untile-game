@@ -68,6 +68,7 @@ namespace utd
         {
             if (bool is_depth = attachment >= attachment::DEPTH)
             {
+                //TODO: review the expression (edge case)
                 UTD_ENGINE_ASSERT(m_formats.back() <= attachment, "framebuffer has more than two depth attachments");
                 std::swap(attachment, m_formats.back());
             }

@@ -55,3 +55,13 @@ namespace std
 	using wptr = weak_ptr<T>;
 
 } /* namespace std */
+namespace utd
+{
+	template<typename T>
+	constexpr bool is_pow_of_two(T value)
+	{
+		static_assert(std::is_integral_v<T>, "T must be of an integral type");
+
+		return (value && (value & value - 1) == 0);
+	}
+}

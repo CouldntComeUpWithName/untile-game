@@ -2,6 +2,8 @@
 
 #ifdef UTD_WINDOWS
 
+#define NOMINMAX
+
 #include <Windows.h>
 
 #endif

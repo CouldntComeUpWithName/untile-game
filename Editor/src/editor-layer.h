@@ -7,6 +7,8 @@
 #include <Engine/Graphics/Framebuffer.h>
 #include<Engine/Graphics/atlas.h>
 
+#include <Engine/Scene/scene.h>
+
 namespace utd
 {
     class editor_layer : public layer
@@ -20,18 +22,14 @@ namespace utd
     private:
         void _on_imgui_render();
     private:
-        utd::ref_ptr<utd::texture> m_cobblestone;
-        utd::ref_ptr<utd::texture> m_grass;
-        utd::ref_ptr<utd::texture> m_sand;
-        
         utd::editor_camera m_editor_camera;
-
-        std::uptr<utd::framebuffer> m_framebuffer;
-        
+        std::uptr<utd::framebuffer> m_viewport_framebuffer;
         texture_pack m_texture_manager;
 
         bool m_viewport_hovered = false;
         bool m_viewport_focused = false;
+        
+        std::uptr<scene> m_active_scene;
         
         //temp 
         utd::atlas m_character_atlas;

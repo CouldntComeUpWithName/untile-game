@@ -10,6 +10,7 @@
 #include<Engine/Graphics/Renderer.h>
 
 #include<Engine/Scene/components.h>
+#include<Engine/Scene/scene.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -21,13 +22,14 @@
 
 void utd::editor_layer::on_attach()
 {
-    m_sand = m_texture_manager.fetch("sand", "E:/Programming/untile/Sandbox/assets/textures/sand_3.png");
-    m_grass = m_texture_manager.fetch("grass", "E:/Programming/untile/Sandbox/assets/textures/grass_2.png");
-    m_cobblestone = m_texture_manager.fetch("cobblestone", "E:/Programming/untile/Sandbox/assets/textures/cobblestone_1.png");
     
-    m_framebuffer = framebuffer::create(1920, 1080);
-    m_framebuffer->attach(framebuffer::attachment::RGBA8, 
+    m_viewport_framebuffer = framebuffer::create(1920, 1080);
+    m_viewport_framebuffer->attach(framebuffer::attachment::RGBA8, 
         framebuffer::attachment::RED_INT, framebuffer::attachment::DEPTH);
+
+    m_active_scene = std::make_unique<utd::scene>();
+    
+    m_active_scene->build_scene();
 
     m_character_atlas = utd::atlas(64, 64, m_texture_manager.fetch("redhat", "E:/Programming/untile/Sandbox/assets/textures/redhat.png"));
     
@@ -116,7 +118,7 @@ void utd::editor_layer::_on_imgui_render()
     m_viewport_hovered = ImGui::IsWindowHovered();
     m_viewport_focused = ImGui::IsWindowFocused();
     
-    m_framebuffer->bind();
+    m_viewport_framebuffer->bind();
 
     utd::renderer::command::clear_color(glm::vec4{ 0.5f, 0.9f, 1.f, 1.f });
     utd::renderer::command::clear();
@@ -128,8 +130,11 @@ void utd::editor_layer::_on_imgui_render()
     static time gt = utd::clock::now();
     
     renderer2d::begin(m_editor_camera);
-    renderer2d::draw(m_character_atlas[i % m_character_atlas.count()], utd::transform{});
-    renderer2d::draw(utd::transform{{3.5f, 0.f, 0.f,}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f}}, utd::sprite{m_texture_manager.get("redhat")});
+    
+    m_active_scene->on_render();
+    // renderer2d::draw(m_character_atlas[i % m_character_atlas.count()], utd::transform{});
+    // renderer2d::draw(utd::transform{{3.5f, 0.f, 0.f,}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f}}, utd::sprite{m_texture_manager.get("redhat")});
+    
     renderer2d::end();
 
     static clock clock;
@@ -141,64 +146,68 @@ void utd::editor_layer::_on_imgui_render()
         clock.reset();
     }
 
-    auto tex_id = m_framebuffer->at(0);
+    auto tex_id = m_viewport_framebuffer->at(0);
     ImGui::Image((void*)tex_id, viewport_region, { 0, 1 }, { 1, 0 });
-    m_framebuffer->unbind();
+    m_viewport_framebuffer->unbind();
     ImGui::End();
     ImGui::PopStyleVar();
 
-    //ImGui::Image((void*)m_texture_manager.get("cobblestone").get_id(), size);
 
-    //ImGui::Text("T");               // Display some text (you can use a format strings too)
 
-    //ImGui::Checkbox("visible", &visible);
-    //auto stats = get_stats();
-    ////ImGui::SliderFloat("Camera FOV", &camera.fovy(), 30.f, 135.f);
-    //ImGui::Text((std::string("Quads: ") + std::to_string(stats.quad_drawn_count)).c_str());
-    //ImGui::Text("Draw Calls: ");
-    //ImGui::SameLine();
-    //ImGui::Text(std::to_string(stats.draw_calls).c_str());
-    //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+#if 0  
+    ImGui::Image((void*)m_texture_manager.get("cobblestone").get_id(), size);
 
-    //const char* projection_type_str[] = { "Perspective", "Orthographic" };
-    //const char* current_projection_type_str = projection_type_str[1];
+    ImGui::Text("T");               // Display some text (you can use a format strings too)
 
-    // if (ImGui::BeginCombo("Projection", current_projection_type_str))
-    // {
-    //     for (int i = 0; i < 2; i++)
-    //     {
-    //         bool selected = current_projection_type_str == projection_type_str[i];
-    //         if (ImGui::Selectable(projection_type_str[i], selected))
-    //         {
-    //             current_projection_type_str = projection_type_str[i];
-    //             m_camera.type((utd::camera::type)i);
-    //         }
+    ImGui::Checkbox("visible", &visible);
+    auto stats = get_stats();
+    //ImGui::SliderFloat("Camera FOV", &camera.fovy(), 30.f, 135.f);
+    ImGui::Text((std::string("Quads: ") + std::to_string(stats.quad_drawn_count)).c_str());
+    ImGui::Text("Draw Calls: ");
+    ImGui::SameLine();
+    ImGui::Text(std::to_string(stats.draw_calls).c_str());
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 
-    //         if (selected) ImGui::SetItemDefaultFocus();
-    //     }
-    //     ImGui::EndCombo();
-    // }
+    const char* projection_type_str[] = { "Perspective", "Orthographic" };
+    const char* current_projection_type_str = projection_type_str[1];
 
-    // ImGui::BeginGroup();
+    if (ImGui::BeginCombo("Projection", current_projection_type_str))
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            bool selected = current_projection_type_str == projection_type_str[i];
+            if (ImGui::Selectable(projection_type_str[i], selected))
+            {
+                current_projection_type_str = projection_type_str[i];
+                m_camera.type((utd::camera::type)i);
+            }
 
-    // if (m_camera.type() == utd::camera::type::ORTHOGRAPHIC)
-    // {
-    //     float curr_size = m_camera.ortho_size();
-    //     if (ImGui::SliderFloat("ortho size", &curr_size, 0.1f, 100.f))
-    //     {
-    //         m_camera.ortho_size(curr_size);
-    //     }
-    // }
-    // else
-    // {
-    //     float curr_fov = m_camera.fovy();
-    //     if (ImGui::SliderFloat("FOV", &curr_fov, 0.1f, 100.f))
-    //     {
-    //         m_camera.fovy(curr_fov);
-    //     }
-    // }
+            if (selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
 
-    //ImGui::EndGroup();
+    ImGui::BeginGroup();
+
+    if (m_camera.type() == utd::camera::type::ORTHOGRAPHIC)
+    {
+        float curr_size = m_camera.ortho_size();
+        if (ImGui::SliderFloat("ortho size", &curr_size, 0.1f, 100.f))
+        {
+            m_camera.ortho_size(curr_size);
+        }
+    }
+    else
+    {
+        float curr_fov = m_camera.fovy();
+        if (ImGui::SliderFloat("FOV", &curr_fov, 0.1f, 100.f))
+        {
+            m_camera.fovy(curr_fov);
+        }
+    }
+
+    ImGui::EndGroup();
+#endif
 
 }
 
@@ -211,6 +220,9 @@ void utd::editor_layer::on_update(float dt)
 {
     if(m_viewport_hovered && m_viewport_focused)
         m_editor_camera.on_update(dt);
+    
+    m_active_scene->on_update(dt);
+
 }
 
 void utd::editor_layer::on_event(utd::event& event)

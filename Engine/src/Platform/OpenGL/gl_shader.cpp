@@ -12,22 +12,22 @@
 
 utd::gl_shader::gl_shader(const std::filesystem::path &vertex, const std::filesystem::path &fragment)
 {
-	_filepath(vertex, fragment);
+    _filepath(vertex, fragment);
 }
 
-void utd::gl_shader::bind()
+void utd::gl_shader::bind() const
 {
-	UTD_PROFILE_FUNC();
-	glUseProgram(get_id());
+    UTD_PROFILE_FUNC();
+    glUseProgram(get_id());
 }
 
-void utd::gl_shader::unbind()
+void utd::gl_shader::unbind() const
 {
-	UTD_PROFILE_FUNC();
-	glUseProgram(false);
+    UTD_PROFILE_FUNC();
+    glUseProgram(false);
 }
 
-void utd::gl_shader::integer(const std::string_view name, int value)
+void utd::gl_shader::integer(const std::string_view name, int value) const
 {
 	UTD_PROFILE_FUNC();
 
@@ -38,7 +38,7 @@ void utd::gl_shader::integer(const std::string_view name, int value)
 	glUniform1i(location, value);
 }
 
-void utd::gl_shader::array(const std::string_view name, int* values, u32 count)
+void utd::gl_shader::array(const std::string_view name, int* values, u32 count) const
 {
 	UTD_PROFILE_FUNC();
 	
@@ -49,7 +49,7 @@ void utd::gl_shader::array(const std::string_view name, int* values, u32 count)
 	glUniform1iv(location, count, values);
 }
 
-void utd::gl_shader::real(const std::string_view name, float value)
+void utd::gl_shader::real(const std::string_view name, float value) const
 {
 	UTD_PROFILE_FUNC();
 
@@ -61,7 +61,7 @@ void utd::gl_shader::real(const std::string_view name, float value)
 	glUniform1f(location, value);
 }
 
-void utd::gl_shader::vec2(const std::string_view name, const glm::vec2& value)
+void utd::gl_shader::vec2(const std::string_view name, const glm::vec2& value) const
 {
 	UTD_PROFILE_FUNC();
 
@@ -73,7 +73,7 @@ void utd::gl_shader::vec2(const std::string_view name, const glm::vec2& value)
 	glUniform2f(location, value.x, value.y);
 }
 
-void utd::gl_shader::vec3(const std::string_view name, const glm::vec3& value)
+void utd::gl_shader::vec3(const std::string_view name, const glm::vec3& value) const
 {
 	UTD_PROFILE_FUNC();
 
@@ -85,7 +85,7 @@ void utd::gl_shader::vec3(const std::string_view name, const glm::vec3& value)
 	glUniform3f(location, value.x, value.y, value.z);
 }
 
-void utd::gl_shader::vec4(const std::string_view name, const glm::vec4& value)
+void utd::gl_shader::vec4(const std::string_view name, const glm::vec4& value) const
 {
 	UTD_PROFILE_FUNC();
 
@@ -97,7 +97,7 @@ void utd::gl_shader::vec4(const std::string_view name, const glm::vec4& value)
 	glUniform4f(location, value.x, value.y, value.z, value.w);
 }
 
-void utd::gl_shader::mat4(const std::string_view name, const glm::mat4& matrix)
+void utd::gl_shader::mat4(const std::string_view name, const glm::mat4& matrix) const
 {
 	UTD_PROFILE_FUNC();
 	
@@ -134,7 +134,7 @@ void utd::gl_shader::source(const std::string& vert_source, const std::string& f
 
 	if (!success)
 	{
-		i8 info[512];
+		char info[512];
 		glGetShaderInfoLog(vertex, 512, nullptr, info);
 		UTD_ERROR("Vertex shader compilation failed: {0}", info);
 	}
@@ -148,7 +148,7 @@ void utd::gl_shader::source(const std::string& vert_source, const std::string& f
 
 	if (!success)
 	{
-		i8 info[512];
+		char info[512];
 		glGetShaderInfoLog(fragment, 512, nullptr, info);
 		UTD_ERROR("Fragment shader compilation failed: {0}", info);
 	}
@@ -164,7 +164,7 @@ void utd::gl_shader::source(const std::string& vert_source, const std::string& f
 
 	if (!success)
 	{
-		i8 info[512];
+		char info[512];
 		glGetProgramInfoLog(m_id, 512, nullptr, info);
 		UTD_ERROR("Shader linkage failed: {0}", info);
 	}
@@ -252,7 +252,7 @@ void utd::gl_shader::_filepath(const std::filesystem::path &vert_path, const std
 
 	if (!success)
 	{
-		i8 info[512];
+		char info[512];
 		glGetProgramInfoLog(m_id, 512, nullptr, info);
 		UTD_ERROR("Shader linkage failed: {0}", info);
 	}

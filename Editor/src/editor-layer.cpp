@@ -107,10 +107,21 @@ void utd::editor_layer::_on_imgui_render()
     ImGui::EndMenuBar();
     ImGui::End();
 
-    ImGui::Begin("Cube Scene");                // Create a window called "Hello, world!" and append into it.
+    ImGui::Begin("Project Inspector");                // Create a window called "Hello, world!" and append into it.
 
     ImGui::End();
 
+    ImGui::Begin("Performance Statistics");
+    {
+        const auto& stats = renderer2d::stats();
+        
+        ImGui::Text((std::string("Quads: ") + std::to_string(stats.quad_drawn_count)).c_str());
+        ImGui::Text("Draw Calls: ");
+        ImGui::SameLine();
+        ImGui::Text(std::to_string(stats.draw_calls).c_str());
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+    }
+    ImGui::End();
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.f, 0.f });
     ImGui::Begin("Viewport");
@@ -137,16 +148,7 @@ void utd::editor_layer::_on_imgui_render()
     
     renderer2d::end();
 
-    static clock clock;
-    using namespace utd::literals;
-    
-    if(clock.elapsed() >= 100_ms)
-    {
-        i++;
-        clock.reset();
-    }
-
-    auto tex_id = m_viewport_framebuffer->at(0);
+    size_t tex_id = m_viewport_framebuffer->at(0);
     ImGui::Image((void*)tex_id, viewport_region, { 0, 1 }, { 1, 0 });
     m_viewport_framebuffer->unbind();
     ImGui::End();
@@ -208,6 +210,11 @@ void utd::editor_layer::_on_imgui_render()
 
     ImGui::EndGroup();
 #endif
+
+}
+
+void utd::editor_layer::_on_statistics_render()
+{
 
 }
 

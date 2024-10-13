@@ -337,7 +337,7 @@ namespace utd::ecs
             return std::tuple<Component&...>{ secure<Component>().get(entity)...};
         }
 
-        bool valid(entity_type entity)
+        bool valid(entity_type entity) const
         {
             return entity < m_entities.size() && entity == m_entities[entity];
         }

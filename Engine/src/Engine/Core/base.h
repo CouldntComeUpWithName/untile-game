@@ -3,9 +3,10 @@
 #include <vector>
 #include <array>
 #include <utility>
+#include <cstdint>
 
 #include <Engine/Utils/object_traits.h>
-#include <Engine/Core/forward_declarations.h>
+#include <Engine/Core/fwd.h>
 
 #define BIT(offset) (1 << offset)
 #define STR(str) #str
@@ -24,18 +25,18 @@
 
 namespace utd
 {
-	using u64  = unsigned long long int;
-	using i64  = long long int;
-	using u32  = unsigned int;
-	using i32  = int;
-	using u16  = unsigned short int;
-	using i16  = short int;
-	using u8   = unsigned char;
-	using i8   = char;
-	using f128 = long double;
+	using u64  = uint64_t;
+	using i64  = int64_t;
+	using u32  = uint32_t;
+	using i32  = int32_t;
+	using u16  = uint16_t;
+	using i16  = int16_t;
+	using u8   = uint8_t;
+	using i8   = int8_t;
+	using f64 = double;
 	
 	using byte  = u8;
-	using ibyte = i8;
+	using ibyte = char;
 	using word  = u16;
 	using dword = u32;
 

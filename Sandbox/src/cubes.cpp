@@ -269,7 +269,7 @@ void cubes::on_render()
 
     //ImGui::Text("T");               // Display some text (you can use a format strings too)
     ImGui::Checkbox("visible", &visible);
-    auto stats = get_stats();
+    const auto& stats = utd::renderer2d::stats();
     //ImGui::SliderFloat("Camera FOV", &camera.fovy(), 30.f, 135.f);
     ImGui::Text((std::string("Quads: ") + std::to_string(stats.quad_drawn_count)).c_str());
     ImGui::Text("Draw Calls: ");

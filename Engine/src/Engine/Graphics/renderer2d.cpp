@@ -112,8 +112,7 @@ struct render_data
     //temp
 };
 
-static stats statistics;
-stats get_stats() { return statistics; }
+static utd::renderer2d::statistics s_stats = {};
 
 static utd::cstring glsl_quad_vertex
 {
@@ -258,6 +257,21 @@ static utd::cstring glsl_circle_fragment
     )"
 };
 
+namespace detail
+{
+    static void start_batch() noexcept;
+    
+    static void restart_batch() noexcept;
+
+    static void bind_textures(const utd::ref_ptr<utd::shader> program) noexcept;
+
+    static void flush() noexcept;
+    
+    static float get_texture_slot(utd::ref_ptr<utd::texture> texture);
+
+}
+
+
 static void _init_quad()
 {
     UTD_PROFILE_FUNC();
@@ -367,13 +381,13 @@ void utd::renderer2d::shutdown() noexcept
 void utd::renderer2d::begin(const multi_camera &camera, const glm::mat4 &transform)
 {
     UTD_PROFILE_FUNC();
-    statistics.quad_drawn_count = 0; statistics.draw_calls = 0;
+    s_stats.quad_drawn_count = 0; s_stats.draw_calls = 0;
 
     render_data::camera_projection_data = camera.projection();
     render_data::camera_projection_data *= transform;
     render_data::uniform_camera_buffer->set_data(&render_data::camera_projection_data, sizeof(render_data::camera_projection_data));
     
-    start_batch();
+    detail::start_batch();
 }
 
 void utd::renderer2d::begin(const editor_camera& editor_camera)
@@ -381,49 +395,23 @@ void utd::renderer2d::begin(const editor_camera& editor_camera)
     render_data::camera_projection_data = editor_camera.view_projection();
     render_data::uniform_camera_buffer->set_data(&render_data::camera_projection_data, sizeof(render_data::camera_projection_data));
     
-    start_batch();
+    detail::start_batch();
 }
 
 void utd::renderer2d::end()
 {
-    flush();
+    detail::flush();
 }
 
 void utd::renderer2d::draw(const transform& transform, const circle& circle)
 {
     UTD_PROFILE_FUNC();
 
-    float index = 0.f;
-    if (circle.texture)
-    {
-        for (u32 i = 1u; i < render_data::texture_slot_index; i++)
-        {
-            if (render_data::texture_slots[i].get() == circle.texture.get())
-            {
-                index = static_cast<float>(i);
-                break;
-            }
-        }
-
-        if (index == 0.f)
-        {
-            if (render_data::texture_slot_index == render_data::MAX_TEXTURE_UNITS)
-            {
-                restart_batch();
-            }
-            else
-            {
-                index = static_cast<float>(render_data::texture_slot_index);
-                render_data::texture_slots[render_data::texture_slot_index] = circle.texture;
-                render_data::texture_slot_index++;
-            }
-
-        }
-
-    }
+    float index = detail::get_texture_slot(circle.texture);
 
     for (u32 i = 0; i < 4; i++)
     {
+        UTD_PROFILE_SCOPE("Circle Vertex Data copying");
         render_data::circle_vertex_buffer_iter->position = transform::get(transform) * render_data::QUAD_VERTEX_POSITIONS[i];
         render_data::circle_vertex_buffer_iter->local_position = render_data::QUAD_VERTEX_POSITIONS[i] * 2.f;
         render_data::circle_vertex_buffer_iter->color = circle.color;
@@ -436,7 +424,7 @@ void utd::renderer2d::draw(const transform& transform, const circle& circle)
         render_data::circle_vertex_buffer_iter++;
     }
 
-    statistics.quad_drawn_count++;
+    s_stats.quad_drawn_count++;
 
 }
 
@@ -444,52 +432,22 @@ void utd::renderer2d::draw(const transform &transform, const sprite &sprite)
 {
     UTD_PROFILE_FUNC();
 
-    float index = 0.f;
-    if(sprite.texture)
-    {
-        for(u32 i = 1u; i < render_data::texture_slot_index; i++)
-        {
-            if(render_data::texture_slots[i].get() == sprite.texture.get())
-            {
-                index = static_cast<float>(i);
-                break;
-            }
-            if (render_data::texture_slots[i]->get_id() != -1)
-            {
-                index = 0.f;
-            }
-        }
+    auto index = detail::get_texture_slot(sprite.texture);
 
-        if(index == 0.f)
-        {
-            if (render_data::texture_slot_index == render_data::MAX_TEXTURE_UNITS)
-            {
-                restart_batch();
-            }
-            else
-            {
-                index = static_cast<float>(render_data::texture_slot_index);
-                render_data::texture_slots[render_data::texture_slot_index] = sprite.texture;
-                render_data::texture_slot_index++;
-            }
-
-        }
-        
-    }
-
-    UTD_PROFILE_BEGIN("renderer2d - sprite copying vertex data");
+    UTD_PROFILE_BEGIN("renderer2d - setting sprite vertex data"); // TODO: fix the bottleneck
     for (u32 i = 0; i < render_data::QUAD_VERTICES; i++)
     {
         render_data::quad_vertex_data_iter->position = transform::get(transform) * render_data::QUAD_VERTEX_POSITIONS[i];
         render_data::quad_vertex_data_iter->color = sprite.color;
         render_data::quad_vertex_data_iter->tiling = sprite.tiling_count;
         render_data::quad_vertex_data_iter->texture_index = index;
+        render_data::quad_vertex_data_iter->tex_coord = render_data::QUAD_VERTEX_POSITIONS[i];
 
         render_data::quad_vertex_data_iter++;
     }
     UTD_PROFILE_END("renderer2d - sprite copying vertex data");
 
-    statistics.quad_drawn_count++;
+    s_stats.quad_drawn_count++;
 
 }
 
@@ -524,7 +482,7 @@ void utd::renderer2d::draw(const sub_texture &subtexture, const transform &trans
         {
             if (render_data::texture_slot_index == render_data::MAX_TEXTURE_UNITS)
             {
-                restart_batch();
+                detail::restart_batch();
             }
             else
             {
@@ -550,62 +508,106 @@ void utd::renderer2d::draw(const sub_texture &subtexture, const transform &trans
     }
     UTD_PROFILE_END("renderer2d - copying vertex data");
 
-    statistics.quad_drawn_count++;
+    s_stats.quad_drawn_count++;
 }
 
-void utd::renderer2d::start_batch()
+const utd::renderer2d::statistics& utd::renderer2d::stats()
 {
-    statistics.quad_drawn_count = 0; statistics.draw_calls = 0;
-
-    render_data::quad_vertex_data_iter = render_data::quad_vertex_data_base;
-    render_data::circle_vertex_buffer_iter = render_data::circle_vertex_buffer_base;
-    render_data::texture_slot_index = 1;
+    return s_stats;
 }
 
-void utd::renderer2d::restart_batch()
+namespace detail
 {
-    UTD_PROFILE_FUNC();
-
-    flush();
-    start_batch();
-}
-
-void utd::renderer2d::flush()
-{
-    UTD_PROFILE_FUNC();
-    size_t quad_vertex_data_offset = std::distance(render_data::quad_vertex_data_base, render_data::quad_vertex_data_iter);
-    if(quad_vertex_data_offset)
+    static void start_batch() noexcept
     {
-        auto range_size = quad_vertex_data_offset * sizeof(vertex_primitive::quad);
-        //(*render_data::quad_vertex_array)[0].set_data(render_data::quad_vertex_data_base, static_cast<u32>(range_size));
-        
-        render_data::quad_vertex_buffer->set_data(render_data::quad_vertex_data_base, static_cast<u32>(range_size));
+        s_stats.quad_drawn_count = 0; s_stats.draw_calls = 0;
 
-        render_data::quad_shader->bind();
-        for (u32 i = 0; i < render_data::texture_slot_index; i++)
-        {
-            render_data::texture_slots[i]->bind(i);
-        }
-
-        renderer::command::draw_indexed(render_data::quad_vertex_array, quad_vertex_data_offset * render_data::QUAD_INDICES);
-        statistics.draw_calls++;
+        render_data::quad_vertex_data_iter = render_data::quad_vertex_data_base;
+        render_data::circle_vertex_buffer_iter = render_data::circle_vertex_buffer_base;
+        render_data::texture_slot_index = 1;
     }
     
-    size_t circle_vertex_buffer_offset = std::distance(render_data::circle_vertex_buffer_base, render_data::circle_vertex_buffer_iter);
-    if (circle_vertex_buffer_offset)
+    static void restart_batch() noexcept
     {
-        auto data_size = circle_vertex_buffer_offset * sizeof(vertex_primitive::circle);
-        //(*render_data::circle_vertex_array)[0].set_data();
-        render_data::circle_vertex_buffer->set_data(render_data::circle_vertex_buffer_base, static_cast<u32>(data_size));
+        UTD_PROFILE_FUNC();
 
-        for (u32 i = 0; i < render_data::texture_slot_index; i++)
+        flush();
+        start_batch();
+    }
+    
+    static void bind_textures(const utd::ref_ptr<utd::shader> program) noexcept
+    {
+        program->bind();
+        for (utd::u32 i = 0; i < render_data::texture_slot_index; i++)
         {
             render_data::texture_slots[i]->bind(i);
         }
+    }
+    
+    static void flush() noexcept
+    {
+        UTD_PROFILE_FUNC();
+        using namespace utd;
+        
+        size_t quad_vertex_data_offset = std::distance(render_data::quad_vertex_data_base, render_data::quad_vertex_data_iter);
+        if(quad_vertex_data_offset)
+        {
+            auto size = quad_vertex_data_offset * sizeof(vertex_primitive::quad);
+            
+            render_data::quad_vertex_buffer->set_data(render_data::quad_vertex_data_base, static_cast<u32>(size));
 
-        render_data::circle_shader->bind();
-        renderer::command::draw_indexed(render_data::circle_vertex_array, circle_vertex_buffer_offset * render_data::QUAD_INDICES);
-        statistics.draw_calls++;
+            bind_textures(render_data::quad_shader);
+
+            renderer::command::draw_indexed(render_data::quad_vertex_array, static_cast<u32>(quad_vertex_data_offset * render_data::QUAD_INDICES));
+            s_stats.draw_calls++;
+        }
+        
+        size_t circle_vertex_buffer_offset = std::distance(render_data::circle_vertex_buffer_base, render_data::circle_vertex_buffer_iter);
+        if (circle_vertex_buffer_offset)
+        {
+            auto size = circle_vertex_buffer_offset * sizeof(vertex_primitive::circle);
+            render_data::circle_vertex_buffer->set_data(render_data::circle_vertex_buffer_base, static_cast<u32>(size));
+
+            bind_textures(render_data::circle_shader);
+
+            render_data::circle_shader->bind();
+            renderer::command::draw_indexed(render_data::circle_vertex_array, static_cast<u32>(circle_vertex_buffer_offset * render_data::QUAD_INDICES));
+            s_stats.draw_calls++;
+        }
+    }
+
+    static float get_texture_slot(utd::ref_ptr<utd::texture> texture)
+    {
+        float index = 0.f;
+        if(texture)
+        {
+            for(utd::u32 i = 1u; i < render_data::texture_slot_index; i++)
+            {
+                if(render_data::texture_slots[i].get() == texture.get())
+                {
+                    index = static_cast<float>(i);
+                    break;
+                }
+            }
+
+            if(index == 0.f)
+            {
+                if (render_data::texture_slot_index == render_data::MAX_TEXTURE_UNITS)
+                {
+                    restart_batch();
+                }
+                else
+                {
+                    index = static_cast<float>(render_data::texture_slot_index);
+                    render_data::texture_slots[render_data::texture_slot_index] = texture;
+                    render_data::texture_slot_index++;
+                }
+
+            }
+            
+        }
+
+        return index;
     }
 
 }

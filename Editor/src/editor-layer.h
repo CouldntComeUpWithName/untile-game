@@ -21,6 +21,7 @@ namespace utd
         void on_detach() override;
     private:
         void _on_imgui_render();
+        void _on_statistics_render();
     private:
         utd::editor_camera m_editor_camera;
         std::uptr<utd::framebuffer> m_viewport_framebuffer;

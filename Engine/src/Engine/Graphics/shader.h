@@ -87,17 +87,17 @@ namespace utd
         shader() = default;
         virtual ~shader() = default;
         
-        virtual void bind()   = 0;
-        virtual void unbind() = 0;
+        virtual void bind()   const = 0;
+        virtual void unbind() const = 0;
 
-        virtual void integer(const std::string_view name, int value)            = 0;
-        virtual void array(const std::string_view name, int* values, u32 count) = 0;
-        virtual void real(const std::string_view name, float value)             = 0;
-        virtual void vec2(const std::string_view name, const glm::vec2& value)  = 0;
-        virtual void vec3(const std::string_view name, const glm::vec3& value)  = 0;
-        virtual void vec4(const std::string_view name, const glm::vec4& value)  = 0;
-        virtual void mat3(const std::string_view name, const glm::mat3& matrix) {/* TODO: get this implemented for derived classes */ }
-        virtual void mat4(const std::string_view name, const glm::mat4& matrix) = 0;
+        virtual void integer(const std::string_view name, int value)            const = 0;
+        virtual void array(const std::string_view name, int* values, u32 count) const = 0;
+        virtual void real(const std::string_view name, float value)             const = 0;
+        virtual void vec2(const std::string_view name, const glm::vec2& value)  const = 0;
+        virtual void vec3(const std::string_view name, const glm::vec3& value)  const = 0;
+        virtual void vec4(const std::string_view name, const glm::vec4& value)  const = 0;
+        virtual void mat3(const std::string_view name, const glm::mat3& matrix) const {/* TODO: get this implemented for derived classes */ }
+        virtual void mat4(const std::string_view name, const glm::mat4& matrix) const = 0;
         
         virtual void source(const std::string&)   = 0;
         virtual void filepath(const std::string&) = 0;
@@ -106,7 +106,7 @@ namespace utd
         
         virtual void filepath(const std::string&, const std::string&) = 0;
 
-        inline id get_id(){ return m_id; }
+        inline id get_id() const { return m_id; }
 
     public:
         static std::uptr<shader> create(const std::string& vertex, const std::string& fragment);

@@ -11,25 +11,21 @@ namespace utd
             : shader()
         { }
         
-        // highly recommend using filepath or source member functions instead
         gl_shader(const std::string&, const std::string&);
         gl_shader(const std::string&);
         gl_shader(const std::filesystem::path&);
         gl_shader(const std::filesystem::path&, const std::filesystem::path&);
 
-        // Inherited via shader
-        void bind() override;
+        void bind() const override;
+        void unbind() const override;
 
-        void unbind() override;
-
-        void integer(const std::string_view name, int value) override;
-
-        void array(const std::string_view name, int* values, u32 count) override;
-        void real(const std::string_view name, float value)             override;
-        void vec2(const std::string_view name, const glm::vec2& value)  override;
-        void vec3(const std::string_view name, const glm::vec3& value)  override;
-        void vec4(const std::string_view name, const glm::vec4& value)  override;
-        void mat4(const std::string_view name, const glm::mat4& value)  override;
+        void integer(const std::string_view name, int value) const override;
+        void array(const std::string_view name, int* values, u32 count) const override;
+        void real(const std::string_view name, float value)             const override;
+        void vec2(const std::string_view name, const glm::vec2& value)  const override;
+        void vec3(const std::string_view name, const glm::vec3& value)  const override;
+        void vec4(const std::string_view name, const glm::vec4& value)  const override;
+        void mat4(const std::string_view name, const glm::mat4& value)  const override;
 
         void source(const std::string&) override;
 

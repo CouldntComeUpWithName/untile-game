@@ -22,10 +22,8 @@ namespace utd
         };
 
     public:
-        virtual ~texture()
-        {
-            UTD_DEBUG(__FUNCTION__ " for resource ID{0} {1}", m_id, "has been called");
-        }
+        virtual ~texture() = default;
+
         texture() = default;
         virtual const specs& get_specs() = 0;
         virtual u32 width() const        = 0;

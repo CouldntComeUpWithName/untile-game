@@ -4,6 +4,8 @@
 #include <Engine/Scene/UECS.h>
 #include <Engine/Core/resource_manager.h>
 
+#include "entt.hpp"
+
 #include <unordered_map>
 
 namespace utd
@@ -35,7 +37,10 @@ namespace utd
         bool m_running;
         
         ecs::entity m_player;
-        ecs::registry m_registry;
+        // ecs::registry m_registry;
+
+        entt::registry m_registry;
+        
         std::unordered_map<ecs::entity, std::string> m_names;
 
         texture_pack m_texture_manager;

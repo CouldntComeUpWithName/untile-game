@@ -14,6 +14,7 @@ namespace utd
         {
             int draw_calls = 0;
             int quad_drawn_count = 0;
+            int quad_drawn_per_batch = 0;
         };
 
         static void init();

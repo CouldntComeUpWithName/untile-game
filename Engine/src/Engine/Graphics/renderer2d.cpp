@@ -21,8 +21,9 @@ namespace vertex_primitive
 {
     struct quad
     {
-        glm::vec3 position;
-        glm::vec4 color;
+        utd::transform transform;
+        int vertex_position_index;
+        glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
         glm::vec2 tex_coord;
         float texture_index;
         float tiling;
@@ -117,14 +118,15 @@ static utd::renderer2d::statistics s_stats = {};
 static utd::cstring glsl_quad_vertex
 {
     R"(
-
     #version 450 core
-
     layout (location = 0) in vec3 a_Position;
-    layout (location = 1) in vec4 a_Color;
-    layout (location = 2) in vec2 a_TexCoord;
-    layout(location = 3) in float a_TexIndex;
-    layout(location = 4) in float a_TilingFactor;
+    layout (location = 1) in vec3 a_Rotation;
+    layout (location = 2) in vec3 a_Scale;
+    layout (location = 3) in int a_VertexPosition;
+    layout (location = 4) in vec4 a_Color;
+    layout (location = 5) in vec2 a_TexCoord;
+    layout(location = 6) in float a_TexIndex;
+    layout(location = 7) in float a_TilingFactor;
 
     layout(std140, binding = 0) uniform Camera
     {
@@ -135,6 +137,57 @@ static utd::cstring glsl_quad_vertex
     layout (location = 1) out flat float v_TexIndex;
     layout(location = 2) out vec2 v_TexCoord;
     layout(location = 3) out float v_TilingFactor;
+    
+    const vec4 VERTEX_POSITIONS[4] = {
+        vec4(-0.5, -0.5, 0.0, 1.0),
+        vec4(0.5, -0.5, 0.0, 1.0),
+        vec4(0.5,  0.5, 0.0, 1.0),
+        vec4(-0.5,  0.5, 0.0, 1.0)
+    };
+
+    mat3 euler_to_rotation_matrix(vec3 angles)
+    {
+        float cosX = cos(angles.x);
+        float sinX = sin(angles.x);
+        float cosY = cos(angles.y);
+        float sinY = sin(angles.y);
+        float cosZ = cos(angles.z);
+        float sinZ = sin(angles.z);
+
+        mat3 rotationX;
+        rotationX[0] = vec3(1.0, 0.0, 0.0);
+        rotationX[1] = vec3(0.0, cosX, -sinX);
+        rotationX[2] = vec3(0.0, sinX, cosX);
+
+        // Rotation matrix around Y-axis
+        mat3 rotationY;
+        rotationY[0] = vec3(cosY, 0.0, sinY);
+        rotationY[1] = vec3(0.0, 1.0, 0.0);
+        rotationY[2] = vec3(-sinY, 0.0, cosY);
+
+        // Rotation matrix around Z-axis
+        mat3 rotationZ;
+        rotationZ[0] = vec3(cosZ, -sinZ, 0.0);
+        rotationZ[1] = vec3(sinZ, cosZ, 0.0);
+        rotationZ[2] = vec3(0.0, 0.0, 1.0);
+
+        // Combine the rotations: Z * Y * X
+        return rotationZ * rotationY * rotationX;
+    }
+    
+    mat4 create_model_matrix(vec3 position, vec3 rotation, vec3 scale) 
+    {
+        mat3 rotationMatrix = euler_to_rotation_matrix(rotation);
+    
+        // Construct a model matrix directly
+        mat4 model;
+        model[0] = vec4(rotationMatrix[0] * scale.x, 0.0);
+        model[1] = vec4(rotationMatrix[1] * scale.y, 0.0);
+        model[2] = vec4(rotationMatrix[2] * scale.z, 0.0);
+        model[3] = vec4(position, 1.0);
+
+        return model;
+    }
 
     void main()
     {
@@ -143,7 +196,24 @@ static utd::cstring glsl_quad_vertex
 	    v_TexIndex = a_TexIndex;
 	    v_TilingFactor = a_TilingFactor;
 
-	    gl_Position = u_ViewProjection * vec4(a_Position, 1.0f);
+        mat4 model = create_model_matrix(a_Position, a_Rotation, a_Scale);
+
+        /*
+        mat4 scale = mat4(1.f);
+        scale[0][0] = a_Scale.x;
+        scale[1][1] = a_Scale.y;
+        scale[2][2] = a_Scale.z;
+        
+        mat4 rotation = euler_to_rotation_matrix(a_Rotation);
+        
+        mat4 model = rotation * scale;
+        
+        vec4 local = model * vec4(a_VertexPosition, 1.0);
+        vec4 world_position = local + vec4(a_Position, 0.0);
+        */
+
+	    vec4 world_position = model * VERTEX_POSITIONS[a_VertexPosition];
+        gl_Position = u_ViewProjection * world_position;
     }
 
     )"
@@ -277,14 +347,28 @@ static void _init_quad()
     UTD_PROFILE_FUNC();
 
     render_data::quad_vertex_array = std::make_unique<utd::vertex_array>();
-
+    /*
+    
+        layout (location = 0) in vec3 a_Position;
+    layout (location = 1) in vec3 a_Rotation;
+    layout (location = 2) in vec3 a_Scale;
+    layout (location = 3) in vec3 a_VertexPosition;
+    layout (location = 4) in vec4 a_Color;
+    layout (location = 5) in vec2 a_TexCoord;
+    layout(location = 6) in float a_TexIndex;
+    layout(location = 7) in float a_TilingFactor;
+    
+    */
     auto vertex_buffer = utd::vertex_buffer::create<vertex_primitive::quad>(render_data::MAX_VERTICES);
     vertex_buffer->set_layout
     (
         {
-            { utd::shader::datatype::FLOAT3, "aPos"     },
-            { utd::shader::datatype::FLOAT4, "aColor"        },
-            { utd::shader::datatype::FLOAT2, "aTexCoord"     },
+            { utd::shader::datatype::FLOAT3, "a_Position"     },
+            { utd::shader::datatype::FLOAT3, "a_Rotation"     },
+            { utd::shader::datatype::FLOAT3, "a_Scale"     },
+            { utd::shader::datatype::INT, "a_VertexPosition" },
+            { utd::shader::datatype::FLOAT4, "a_Color"        },
+            { utd::shader::datatype::FLOAT2, "a_TexCoord"     },
             { utd::shader::datatype::FLOAT,  "a_TexIndex"     },
             { utd::shader::datatype::FLOAT,  "a_TilingFactor" },
         }
@@ -297,7 +381,7 @@ static void _init_quad()
     for (utd::u32 i = 0; i < render_data::MAX_VERTICES; i++)
     {
         auto index = i % render_data::QUAD_VERTICES;
-        render_data::quad_vertex_data_base[i].tex_coord = render_data::TEXTURE_COORDS[index];
+        render_data::quad_vertex_data_base[i].vertex_position_index = index;
     }
 
     render_data::quad_shader = utd::shader::create(glsl_quad_vertex, glsl_quad_fragment);
@@ -433,15 +517,19 @@ void utd::renderer2d::draw(const transform &transform, const sprite &sprite)
     UTD_PROFILE_FUNC();
 
     auto index = detail::get_texture_slot(sprite.texture);
-
+    if (s_stats.quad_drawn_count >= render_data::MAX_QUADS)
+    {
+        detail::restart_batch();
+    }
     UTD_PROFILE_BEGIN("renderer2d - setting sprite vertex data"); // TODO: fix the bottleneck
+    
     for (u32 i = 0; i < render_data::QUAD_VERTICES; i++)
     {
-        render_data::quad_vertex_data_iter->position = transform::get(transform) * render_data::QUAD_VERTEX_POSITIONS[i];
+        render_data::quad_vertex_data_iter->transform = transform;
         render_data::quad_vertex_data_iter->color = sprite.color;
         render_data::quad_vertex_data_iter->tiling = sprite.tiling_count;
         render_data::quad_vertex_data_iter->texture_index = index;
-        render_data::quad_vertex_data_iter->tex_coord = render_data::QUAD_VERTEX_POSITIONS[i];
+        render_data::quad_vertex_data_iter->tex_coord = render_data::TEXTURE_COORDS[i];
 
         render_data::quad_vertex_data_iter++;
     }
@@ -498,7 +586,7 @@ void utd::renderer2d::draw(const sub_texture &subtexture, const transform &trans
     UTD_PROFILE_BEGIN("renderer2d - copying vertex data");
     for (u32 i = 0; i < render_data::QUAD_VERTICES; i++)
     {
-        render_data::quad_vertex_data_iter->position = transform::get(transform) * render_data::QUAD_VERTEX_POSITIONS[i];
+        //render_data::quad_vertex_data_iter->vertex_position = transform::get(transform) * render_data::QUAD_VERTEX_POSITIONS[i];
         render_data::quad_vertex_data_iter->color = {1.f, 1.f, 1.f, 1.f};
         render_data::quad_vertex_data_iter->tiling = 1.f;
         render_data::quad_vertex_data_iter->texture_index = index;
@@ -579,6 +667,7 @@ namespace detail
     static float get_texture_slot(utd::ref_ptr<utd::texture> texture)
     {
         float index = 0.f;
+        
         if(texture)
         {
             for(utd::u32 i = 1u; i < render_data::texture_slot_index; i++)

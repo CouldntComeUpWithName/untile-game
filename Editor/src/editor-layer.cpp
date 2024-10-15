@@ -9,6 +9,8 @@
 #include<Engine/Graphics/Texture.h>
 #include<Engine/Graphics/Renderer.h>
 
+#include <Engine/ImGui/imgui_layer.h>
+
 #include<Engine/Scene/components.h>
 #include<Engine/Scene/scene.h>
 
@@ -220,7 +222,20 @@ void utd::editor_layer::_on_statistics_render()
 
 void utd::editor_layer::on_render()
 {
-    _on_imgui_render();
+    UTD_IMGUI_SCOPE()
+    {
+        _on_imgui_render();
+    }
+    else
+    {
+        renderer2d::begin(m_editor_camera);
+
+        m_active_scene->on_render();
+        // renderer2d::draw(m_character_atlas[i % m_character_atlas.count()], utd::transform{});
+        // renderer2d::draw(utd::transform{{3.5f, 0.f, 0.f,}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f}}, utd::sprite{m_texture_manager.get("redhat")});
+
+        renderer2d::end();
+    }
 }
 
 void utd::editor_layer::on_update(float dt)

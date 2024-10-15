@@ -331,7 +331,7 @@ namespace utd::ecs
         {
             static_assert(sizeof...(Component) > 0);
             
-            UTD_PROFILE_FUNC();
+            //UTD_PROFILE_FUNC();
             UTD_ASSERT(has<Component...>(entity));
             
             return std::tuple<Component&...>{ secure<Component>().get(entity)...};
@@ -364,7 +364,7 @@ namespace utd::ecs
         template<typename Component>
         component_storage<Entity, Component>& secure() const
         {
-            UTD_PROFILE_FUNC();
+            //UTD_PROFILE_FUNC();
 
             const auto index = storage_index<Component>::get();
 

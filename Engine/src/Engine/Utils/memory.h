@@ -1,6 +1,8 @@
 #pragma once
 #include <memory>
-#include "windows.devices.input.preview.h"
+
+void* operator new(std::size_t count);
+void operator delete(void* count);
 
 namespace utd::filesystem
 {

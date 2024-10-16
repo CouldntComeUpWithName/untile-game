@@ -240,15 +240,29 @@ void utd::editor_layer::on_render()
 
 void utd::editor_layer::on_update(float dt)
 {
-    if(m_viewport_hovered && m_viewport_focused)
+    UTD_IMGUI_SCOPE()
+    {
+        if(m_viewport_hovered && m_viewport_focused)
+            m_editor_camera.on_update(dt);
+    }
+    else
+    {
         m_editor_camera.on_update(dt);
-    
+    }
+        
     m_active_scene->on_update(dt);
 
 }
 
 void utd::editor_layer::on_event(utd::event& event)
 {
-    if (m_viewport_hovered)
+    UTD_IMGUI_SCOPE()
+    {
+        if (m_viewport_hovered)
+            m_editor_camera.on_event(event);
+    }
+    else
+    {
         m_editor_camera.on_event(event);
+    }
 }

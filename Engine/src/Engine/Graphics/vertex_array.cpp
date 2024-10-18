@@ -85,6 +85,7 @@ void utd::vertex_array::unbind() const
 
 void utd::vertex_array::set_index_buffer(std::uptr<index_buffer>&& index_buffer)
 {
+    bind();
     index_buffer->bind();
     m_index_buffer = std::forward<decltype(index_buffer)>(index_buffer);
 }

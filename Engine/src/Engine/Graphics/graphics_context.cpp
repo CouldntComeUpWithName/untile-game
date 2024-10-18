@@ -1,7 +1,7 @@
 #include "upch.h"
 #include "graphics_context.h"
 
-#include <Engine/Platform/OpenGL/opengl_context.h>
+#include <Platform/OpenGL/opengl_context.h>
 
 std::uptr<utd::graphics_context> utd::graphics_context::create()
 {

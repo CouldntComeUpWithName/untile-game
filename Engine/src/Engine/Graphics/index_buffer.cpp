@@ -11,7 +11,7 @@ utd::index_buffer::index_buffer(u32* indices_source, u32 count)
 
 
 utd::index_buffer::index_buffer(const std::initializer_list<u32>& indices)
-    : m_id(0), m_count(indices.size())
+    : m_id(0), m_count(static_cast<u32>(indices.size()))
 {
     const std::vector<u32> arr = indices;
     

@@ -7,12 +7,13 @@ add_library(stb INTERFACE)
 include_directories(extern/spdlog/include)
 include_directories(extern/imgui extern/imgui/backends)
 
+target_compile_definitions(Untiled PRIVATE UTD_ENGINE)
 target_include_directories(Untiled PUBLIC extern/glad/include)
 target_include_directories(Untiled PUBLIC src)
 target_include_directories(Untiled PUBLIC extern/stb)
 
 utd_configure_target(Untiled)
-
+target_compile_definitions(Untiled PRIVATE UTD_ENGINE)
 file(GLOB_RECURSE SOURCES src/*.cpp src/**.h src/**.inl extern/stb/**.h extern/stb/**.cpp)
 
 target_sources(Untiled PRIVATE ${SOURCES})

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace utd
+namespace utd::utils
 {
     template<typename t_enum, typename t_return>
     t_return enum_cast(t_enum en)

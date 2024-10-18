@@ -11,8 +11,7 @@
 
 
 #include <Engine/Utils/object_traits.h>
-#include <Engine/Core/System/clock.h>
-
+#include <Platform/Common/System/clock.h>
 
 namespace utd
 {
@@ -93,18 +92,18 @@ namespace utd
     #include <tracy/Tracy.hpp>
     //#include <tracy/TracyOpenGL.hpp>
 
-    #if UTD_MSVC // MSVC cannot evaluate ZoneScoped to a constant due to __LINE__ macro not being a compile-time constant value
+    #if UTD_MSVC // MSVC cannot evaluate ZoneScoped to a constant due to __LINE__ macro being not a compile-time constant value
         #define UTD_PROFILE_SCOPE(name, ...) static const tracy::SourceLocationData TracyConcat(__tracy_source_location,UTD_LINE) { name, UTD_FUNCTION,  UTD_FILE, (uint32_t)UTD_LINE, int{__VA_ARGS__} }; tracy::ScopedZone varname( &TracyConcat(__tracy_source_location,__LINE__), true )
     #else
         #define UTD_GET_RESPECTIVE_MACRO(name, color, macro, ...) macro
-        #define UTD_PROFILE_SCOPE(name, ...) UTD_GET_RESPECTIVE(name, __VA_ARGS__, ZoneScopedNC, ZoneScopedN)(name, __VA_ARGS__)
-    #endif
+        #define UTD_PROFILE_SCOPE(name, ...) UTD_GET_RESPECTIVE_MACRO(name, __VA_ARGS__, ZoneScopedNC, ZoneScopedN)(name, __VA_ARGS__)
+    #endif /* TRACY_ENABLE */
 
     #define UTD_PROFILE_FUNC(...) UTD_PROFILE_SCOPE(__FUNCTION__, __VA_ARGS__)
 
     #define UTD_PROFILE_BEGIN(name, ...) { UTD_PROFILE_SCOPE(name, __VA_ARGS__);
     #define UTD_PROFILE_END(...) }
-   
+
     #define UTD_PROFILE_FRAME_MARK(...) FrameMarkNamed(std::string_view(__VA_ARGS__).data())
     #define UTD_PROFILE_FRAME_BEGIN(...) FrameMarkStart(_VA_ARGS__)
     #define UTD_PROFILE_FRAME_END(...) FrameMarkEnd(_VA_ARGS__)
@@ -124,5 +123,5 @@ namespace utd
 #define UTD_PROFILE_FRAME_BEGIN(...)
 #define UTD_PROFILE_FRAME_END(...)
 
-#endif /* TRACY_ENABLE */
+#endif /* UTD_PROFILING_ENABLE */
 

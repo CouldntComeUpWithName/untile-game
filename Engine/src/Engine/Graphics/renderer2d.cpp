@@ -1,0 +1,704 @@
+#include <upch.h>
+#include "renderer2d.h"
+
+#include <Engine/Core/Assert.h>
+
+#include <Engine/Graphics/renderer.h>
+#include <Engine/Graphics/vertex_array.h>
+#include <Engine/Graphics/vertex_buffer.h>
+#include <Engine/Graphics/vertex_attrib.h>
+#include <Engine/Graphics/camera.h>
+#include <Engine/Graphics/uniform_buffer.h>
+#include <Engine/Graphics/atlas.h>
+
+#include <Engine/Scene/components.h>
+
+#include <Engine/Profiling/profile.h>
+
+#include <glm/gtc/matrix_transform.hpp>
+
+namespace vertex_primitive
+{
+    struct quad
+    {
+        utd::transform transform;
+        int vertex_position_index;
+        glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
+        glm::vec2 tex_coord;
+        float texture_index;
+        float tiling;
+    };
+
+    struct circle
+    {
+        glm::vec3 position;
+        glm::vec3 local_position;
+        glm::vec4 color;
+        glm::vec4 outline_color;
+        glm::vec2 tex_coord;
+        float tex_index;
+        float tiling;
+        float thickness = 0.5f;
+        float fade = 0.02f;
+    };
+
+    struct line
+    {
+
+    };
+
+}
+
+struct render_data
+{
+    static constexpr utd::u32 TRIANGLE_INDEX_COUNT = 3U;
+    
+    static constexpr utd::u32 MAX_QUADS    = 12'000U;
+    static constexpr utd::u32 QUAD_VERTICES = 4U;
+    static constexpr utd::u32 QUAD_INDICES = TRIANGLE_INDEX_COUNT * 2U;
+    
+    static constexpr utd::u32 MAX_VERTICES = MAX_QUADS * QUAD_VERTICES;
+    static constexpr utd::u32 MAX_INDICES  = MAX_QUADS * QUAD_INDICES;
+    
+    static constexpr utd::u32 MAX_TEXTURE_UNITS = 32U;
+
+    // probably it'll end up not being constexpr, but it's good for now
+    static constexpr glm::vec4 QUAD_VERTEX_POSITIONS[4]
+    {
+        { -0.5f, -0.5f, 0.0f, 1.0f },    { 0.5f, -0.5f, 0.0f, 1.0f },
+        //           |                -1             |
+        //           |                |              |
+        //           *_______________0.5 ____________*
+        //           |                |              |
+        //-1_______-0.5_______________0_____________0.5_____________x 1
+        //           |                |              |
+        //           *______________-0.5_____________*                
+        //           |                |              |                  
+        //           |                y              |                   
+        //           |                1              |                    
+        { 0.5f,  0.5f, 0.0f, 1.0f },     { -0.5f,  0.5f, 0.0f, 1.0f }
+    };
+
+    static constexpr glm::vec2 TEXTURE_COORDS[render_data::QUAD_VERTICES]
+    {
+        {0.f, 0.f}, {1.f, 0.f},
+
+        {1.f, 1.f}, {0.f, 1.f}
+    };
+    
+    static inline std::uptr<utd::vertex_array> quad_vertex_array;
+    static inline utd::ref_ptr<utd::vertex_buffer> quad_vertex_buffer;
+    static inline std::uptr<utd::shader> quad_shader;
+    static inline vertex_primitive::quad* quad_vertex_data_base;
+    static inline vertex_primitive::quad* quad_vertex_data_iter;
+
+    static inline std::uptr<utd::vertex_array> circle_vertex_array;
+    static inline utd::ref_ptr<utd::vertex_buffer> circle_vertex_buffer;
+    static inline std::uptr<utd::shader> circle_shader;
+    static inline vertex_primitive::circle* circle_vertex_buffer_base;
+    static inline vertex_primitive::circle* circle_vertex_buffer_iter;
+
+    static inline std::uptr<utd::vertex_array> line_vertex_array;
+    static inline std::uptr<utd::shader> line_shader;
+    static inline vertex_primitive::line* line_vertex_buffer_base;
+    static inline vertex_primitive::line* line_vertex_buffer_iter;
+    
+    static inline std::array<utd::ref_ptr<utd::texture>, MAX_TEXTURE_UNITS> texture_slots;
+    static inline std::uptr<utd::texture> default_texture;
+    static inline utd::u32 texture_slot_index = 1;
+    
+    static inline glm::mat4 camera_projection_data = glm::mat4(1.f);
+    static inline std::uptr<utd::uniform_buffer> uniform_camera_buffer;
+   
+    //temp
+};
+
+static utd::renderer2d::statistics s_stats = {};
+
+static utd::cstring glsl_quad_vertex
+{
+    R"(
+    #version 450 core
+    layout (location = 0) in vec3 a_Position;
+    layout (location = 1) in vec3 a_Rotation;
+    layout (location = 2) in vec3 a_Scale;
+    layout (location = 3) in int a_VertexPosition;
+    layout (location = 4) in vec4 a_Color;
+    layout (location = 5) in vec2 a_TexCoord;
+    layout(location = 6) in float a_TexIndex;
+    layout(location = 7) in float a_TilingFactor;
+
+    layout(std140, binding = 0) uniform Camera
+    {
+	    mat4 u_ViewProjection;
+    };
+
+    layout (location = 0) out vec4 v_Color;
+    layout (location = 1) out flat float v_TexIndex;
+    layout(location = 2) out vec2 v_TexCoord;
+    layout(location = 3) out float v_TilingFactor;
+    
+    const vec4 VERTEX_POSITIONS[4] = {
+        vec4(-0.5, -0.5, 0.0, 1.0),
+        vec4(0.5, -0.5, 0.0, 1.0),
+        vec4(0.5,  0.5, 0.0, 1.0),
+        vec4(-0.5,  0.5, 0.0, 1.0)
+    };
+
+    mat3 euler_to_rotation_matrix(vec3 angles)
+    {
+        float cosX = cos(angles.x);
+        float sinX = sin(angles.x);
+        float cosY = cos(angles.y);
+        float sinY = sin(angles.y);
+        float cosZ = cos(angles.z);
+        float sinZ = sin(angles.z);
+
+        mat3 rotationX;
+        rotationX[0] = vec3(1.0, 0.0, 0.0);
+        rotationX[1] = vec3(0.0, cosX, -sinX);
+        rotationX[2] = vec3(0.0, sinX, cosX);
+
+        // Rotation matrix around Y-axis
+        mat3 rotationY;
+        rotationY[0] = vec3(cosY, 0.0, sinY);
+        rotationY[1] = vec3(0.0, 1.0, 0.0);
+        rotationY[2] = vec3(-sinY, 0.0, cosY);
+
+        // Rotation matrix around Z-axis
+        mat3 rotationZ;
+        rotationZ[0] = vec3(cosZ, -sinZ, 0.0);
+        rotationZ[1] = vec3(sinZ, cosZ, 0.0);
+        rotationZ[2] = vec3(0.0, 0.0, 1.0);
+
+        // Combine the rotations: Z * Y * X
+        return rotationZ * rotationY * rotationX;
+    }
+    
+    mat4 create_model_matrix(vec3 position, vec3 rotation, vec3 scale) 
+    {
+        mat3 rotationMatrix = euler_to_rotation_matrix(rotation);
+    
+        // Construct a model matrix directly
+        mat4 model;
+        model[0] = vec4(rotationMatrix[0] * scale.x, 0.0);
+        model[1] = vec4(rotationMatrix[1] * scale.y, 0.0);
+        model[2] = vec4(rotationMatrix[2] * scale.z, 0.0);
+        model[3] = vec4(position, 1.0);
+
+        return model;
+    }
+
+    void main()
+    {
+	    v_Color    = a_Color;
+	    v_TexCoord = a_TexCoord;
+	    v_TexIndex = a_TexIndex;
+	    v_TilingFactor = a_TilingFactor;
+
+        mat4 model = create_model_matrix(a_Position, a_Rotation, a_Scale);
+
+        /*
+        mat4 scale = mat4(1.f);
+        scale[0][0] = a_Scale.x;
+        scale[1][1] = a_Scale.y;
+        scale[2][2] = a_Scale.z;
+        
+        mat4 rotation = euler_to_rotation_matrix(a_Rotation);
+        
+        mat4 model = rotation * scale;
+        
+        vec4 local = model * vec4(a_VertexPosition, 1.0);
+        vec4 world_position = local + vec4(a_Position, 0.0);
+        */
+
+	    vec4 world_position = model * VERTEX_POSITIONS[a_VertexPosition];
+        gl_Position = u_ViewProjection * world_position;
+    }
+
+    )"
+};
+
+static utd::cstring glsl_quad_fragment
+{
+    R"(
+
+    #version 450
+    layout(location = 0) out vec4 o_Color;
+    
+    layout (location = 0) in vec4 v_Color;
+    layout (location = 1) in flat float v_TexIndex;
+    layout (location = 2) in vec2 v_TexCoord;
+    layout(location = 3) in float v_TilingFactor;
+    
+    layout(binding = 0) uniform sampler2D u_Textures[32];
+    
+    void main()
+    {
+        int index = int(v_TexIndex);
+        o_Color = texture(u_Textures[index], v_TexCoord * v_TilingFactor) * v_Color;
+    }
+
+    )"
+};
+
+static utd::cstring glsl_circle_vertex
+{
+    R"(
+    #version 450
+    layout (location = 0) in vec3 a_WorldPosition;
+    layout (location = 1) in vec3 a_LocalPosition;
+    layout (location = 2) in vec4 a_Color;
+    layout (location = 3) in vec4 a_OutlineColor;
+    layout (location = 4) in vec2 a_TexCoord;
+    layout(location = 5) in float a_TexIndex;
+    layout(location = 6) in float a_TilingFactor;
+    layout(location = 7) in float a_Thickness;
+    layout(location = 8) in float a_Fade;
+
+
+    layout(std140, binding = 0) uniform Camera
+    {
+	    mat4 u_ViewProjection;
+    };
+
+    layout (location = 0) out vec4 v_Color;
+    layout (location = 1) out flat float v_TexIndex;
+    layout(location = 2) out vec2 v_TexCoord;
+    layout(location = 3) out float v_TilingFactor;
+    layout(location = 4) out flat float v_Thickness;
+    layout(location = 5) out float v_Fade;
+    layout(location = 6) out vec3 v_LocalPosition;
+    layout(location = 7) out vec4 v_OutlineColor;
+
+    void main()
+    {
+	    v_Color    = a_Color;
+	    v_TexCoord = a_TexCoord;
+	    v_TexIndex = a_TexIndex;
+	    v_TilingFactor = a_TilingFactor;
+        v_Thickness = a_Thickness;
+        v_Fade = a_Fade;
+        v_LocalPosition = a_LocalPosition;
+        v_OutlineColor = a_OutlineColor;
+
+	    gl_Position = u_ViewProjection * vec4(a_WorldPosition, 1.0f);
+    }
+
+    )"
+};
+
+static utd::cstring glsl_circle_fragment
+{
+    R"(
+    #version 450
+    layout(location = 0) out vec4 o_Color;
+    
+    layout (location = 0) in vec4 v_Color;
+    layout (location = 1) in flat float v_TexIndex;
+    layout(location = 2) in vec2 v_TexCoord;
+    layout(location = 3) in float v_TilingFactor;
+    layout(location = 4) in flat float v_Thickness;
+    layout(location = 5) in float v_Fade;
+    layout(location = 6) in vec3 v_LocalPosition;
+    layout(location = 7) in vec4 v_OutlineColor;
+    
+    layout(binding = 0) uniform sampler2D u_Textures[32];
+    
+    void main()
+    {
+        int index = int(v_TexIndex);
+        
+        float distance = 1.0 - length(v_LocalPosition);
+        float circle = smoothstep(v_Thickness + v_Fade, v_Thickness, distance);
+
+        if (circle != 0.0)
+	    {
+            o_Color = v_OutlineColor;
+        }
+        else
+        {
+            o_Color = texture(u_Textures[index], v_TexCoord * v_TilingFactor) * v_Color;
+        }
+        circle = smoothstep(0.0, v_Fade, distance);
+	    o_Color.a *= circle;
+    }
+
+    )"
+};
+
+namespace detail
+{
+    static void init_quad();
+
+    static void init_circle();
+
+    static void set_index_buffers();
+
+    static void start_batch() noexcept;
+    
+    static void restart_batch() noexcept;
+
+    static void bind_textures(const utd::ref_ptr<utd::shader> program) noexcept;
+
+    static void flush() noexcept;
+    
+    static float get_texture_slot(utd::ref_ptr<utd::texture> texture);
+
+}
+
+void utd::renderer2d::init()
+{
+    detail::init_quad();
+    detail::init_circle();
+
+    detail::set_index_buffers();
+
+    render_data::uniform_camera_buffer = std::make_unique<uniform_buffer>(static_cast<u32>(sizeof(glm::mat4)), 0u);
+}
+
+void utd::renderer2d::shutdown() noexcept
+{
+    delete[] render_data::circle_vertex_buffer_base;
+    delete[] render_data::quad_vertex_data_base;
+    delete[] render_data::line_vertex_buffer_base;
+}
+
+void utd::renderer2d::begin(const multi_camera &camera, const glm::mat4 &transform)
+{
+    UTD_PROFILE_FUNC();
+    s_stats.quad_drawn_count = 0; s_stats.draw_calls = 0;
+
+    render_data::camera_projection_data = camera.projection();
+    render_data::camera_projection_data *= transform;
+    render_data::uniform_camera_buffer->set_data(&render_data::camera_projection_data, sizeof(render_data::camera_projection_data));
+    
+    detail::start_batch();
+}
+
+void utd::renderer2d::begin(const editor_camera& editor_camera)
+{
+    s_stats = statistics{};
+    
+    render_data::camera_projection_data = editor_camera.view_projection();
+    render_data::uniform_camera_buffer->set_data(&render_data::camera_projection_data, sizeof(render_data::camera_projection_data));
+    
+    detail::start_batch();
+}
+
+void utd::renderer2d::end()
+{
+    detail::flush();
+}
+
+void utd::renderer2d::draw(const transform& transform, const circle& circle)
+{
+    UTD_PROFILE_FUNC();
+
+    float index = detail::get_texture_slot(circle.texture);
+
+    auto transform_matrix = transform::get(transform);
+    for (u32 i = 0; i < render_data::QUAD_VERTICES; i++)
+    {
+        UTD_PROFILE_SCOPE("Circle Vertex Data copying");
+        render_data::circle_vertex_buffer_iter->position = transform_matrix * render_data::QUAD_VERTEX_POSITIONS[i];
+        render_data::circle_vertex_buffer_iter->local_position = render_data::QUAD_VERTEX_POSITIONS[i] * 2.f;
+        render_data::circle_vertex_buffer_iter->color = circle.color;
+        render_data::circle_vertex_buffer_iter->outline_color = circle.outline_color;
+        render_data::circle_vertex_buffer_iter->tiling = circle.tiling_count;
+        render_data::circle_vertex_buffer_iter->tex_index = index;
+        render_data::circle_vertex_buffer_iter->thickness = circle.outline_thickness;
+        render_data::circle_vertex_buffer_iter->fade = circle.fade;
+
+        render_data::circle_vertex_buffer_iter++;
+    }
+
+    s_stats.quad_drawn_count++;
+
+}
+
+void utd::renderer2d::draw(const transform &transform, const sprite &sprite)
+{
+    UTD_PROFILE_FUNC();
+
+    auto index = detail::get_texture_slot(sprite.texture);
+
+   
+    
+    UTD_PROFILE_BEGIN("renderer2d - setting sprite vertex data"); // TODO: fix the bottleneck
+    for (u32 i = 0; i < render_data::QUAD_VERTICES; i++)
+    {
+        render_data::quad_vertex_data_iter->transform = transform;
+        render_data::quad_vertex_data_iter->color = sprite.color;
+        render_data::quad_vertex_data_iter->tiling = sprite.tiling_count;
+        render_data::quad_vertex_data_iter->texture_index = index;
+        render_data::quad_vertex_data_iter->tex_coord = render_data::TEXTURE_COORDS[i];
+
+        render_data::quad_vertex_data_iter++;
+    }
+    UTD_PROFILE_END("renderer2d - sprite copying vertex data");
+   
+   auto count = std::distance(render_data::quad_vertex_data_base, render_data::quad_vertex_data_iter);
+   if (count == render_data::MAX_QUADS * render_data::QUAD_VERTICES)
+   {
+       detail::restart_batch();
+   }
+
+    s_stats.quad_drawn_count++;
+
+}
+
+void utd::renderer2d::draw(const sub_texture &subtexture, const transform &transform)
+{
+    UTD_PROFILE_FUNC();
+    auto bounds = subtexture.get_rect();
+
+    glm::vec2 tex_coords[4]
+    {
+        {bounds.u, bounds.v}, {bounds.width, bounds.v},
+        {bounds.width, bounds.height}, {bounds.u, bounds.height}
+    };
+
+    float index = 0.f;
+    if(subtexture.get_texture())
+    {
+        for(u32 i = 1u; i < render_data::texture_slot_index; i++)
+        {
+            if(render_data::texture_slots[i].get() == subtexture.get_texture().get())
+            {
+                index = static_cast<float>(i);
+                break;
+            }
+            if (render_data::texture_slots[i]->get_id() != -1)
+            {
+                index = 0.f;
+            }
+        }
+
+        if(index == 0.f)
+        {
+            if (render_data::texture_slot_index == render_data::MAX_TEXTURE_UNITS)
+            {
+                detail::restart_batch();
+            }
+            else
+            {
+                index = static_cast<float>(render_data::texture_slot_index);
+                render_data::texture_slots[render_data::texture_slot_index] = subtexture.get_texture();
+                render_data::texture_slot_index++;
+            }
+
+        }
+        
+    }
+    
+    UTD_PROFILE_BEGIN("renderer2d - copying vertex data");
+    for (u32 i = 0; i < render_data::QUAD_VERTICES; i++)
+    {
+        //render_data::quad_vertex_data_iter->vertex_position = transform::get(transform) * render_data::QUAD_VERTEX_POSITIONS[i];
+        render_data::quad_vertex_data_iter->color = {1.f, 1.f, 1.f, 1.f};
+        render_data::quad_vertex_data_iter->tiling = 1.f;
+        render_data::quad_vertex_data_iter->texture_index = index;
+        render_data::quad_vertex_data_iter->tex_coord = tex_coords[i];
+
+        render_data::quad_vertex_data_iter++;
+    }
+    UTD_PROFILE_END("renderer2d - copying vertex data");
+
+    s_stats.quad_drawn_count++;
+}
+
+const utd::renderer2d::statistics& utd::renderer2d::stats()
+{
+    return s_stats;
+}
+
+namespace detail
+{
+
+    static void init_quad()
+    {
+        UTD_PROFILE_FUNC();
+
+        render_data::quad_vertex_array = std::make_unique<utd::vertex_array>();
+
+        auto vertex_buffer = utd::vertex_buffer::create<vertex_primitive::quad>(render_data::MAX_VERTICES);
+        vertex_buffer->set_layout
+        (
+            {
+                { utd::shader::datatype::FLOAT3, "a_Position"     },
+                { utd::shader::datatype::FLOAT3, "a_Rotation"     },
+                { utd::shader::datatype::FLOAT3, "a_Scale"     },
+                { utd::shader::datatype::INT, "a_VertexPosition" },
+                { utd::shader::datatype::FLOAT4, "a_Color"        },
+                { utd::shader::datatype::FLOAT2, "a_TexCoord"     },
+                { utd::shader::datatype::FLOAT,  "a_TexIndex"     },
+                { utd::shader::datatype::FLOAT,  "a_TilingFactor" },
+            }
+        );
+        render_data::quad_vertex_buffer = vertex_buffer;
+        render_data::quad_vertex_array->push_back(std::move(vertex_buffer));
+
+        render_data::quad_vertex_data_base = new vertex_primitive::quad[render_data::MAX_VERTICES];
+
+        for (utd::u32 i = 0; i < render_data::MAX_VERTICES; i++)
+        {
+            auto index = i % render_data::QUAD_VERTICES;
+            render_data::quad_vertex_data_base[i].vertex_position_index = index;
+        }
+
+        render_data::quad_shader = utd::shader::create(glsl_quad_vertex, glsl_quad_fragment);
+
+        render_data::default_texture = utd::texture::create();
+        utd::u32 white_texture = 0xffffffff;
+        render_data::default_texture->set_data(&white_texture, sizeof(utd::u32));
+        render_data::texture_slots[0] = render_data::default_texture;
+    }
+
+    static void init_circle()
+    { 
+        render_data::circle_vertex_array = std::make_unique<utd::vertex_array>();
+        auto vertex_buffer = utd::vertex_buffer::create<vertex_primitive::circle>(render_data::MAX_VERTICES);
+        
+        vertex_buffer->set_layout
+        (
+            {
+                { utd::shader::datatype::FLOAT3, "a_WorldPosition" },
+                { utd::shader::datatype::FLOAT3, "a_LocalPosition" },
+                { utd::shader::datatype::FLOAT4,         "a_Color" },
+                { utd::shader::datatype::FLOAT4,  "a_OutlineColor" },
+                { utd::shader::datatype::FLOAT2,       "aTexCoord" },
+                { utd::shader::datatype::FLOAT,       "a_TexIndex" },
+                { utd::shader::datatype::FLOAT,   "a_TilingFactor" },
+                { utd::shader::datatype::FLOAT,      "a_Thickness" },
+                { utd::shader::datatype::FLOAT,           "a_Fade" }
+            }
+        );
+        
+        render_data::circle_vertex_buffer = vertex_buffer;
+        render_data::circle_vertex_array->push_back(std::move(vertex_buffer));
+        render_data::circle_vertex_buffer_base = new vertex_primitive::circle[render_data::MAX_VERTICES];
+        
+        for (utd::u32 i = 0; i < render_data::MAX_VERTICES; i++)
+        {
+            auto index = i % render_data::QUAD_VERTICES;
+            render_data::circle_vertex_buffer_base[i].tex_coord = render_data::TEXTURE_COORDS[index];
+        }
+        
+        render_data::circle_shader = utd::shader::create(glsl_circle_vertex, glsl_circle_fragment);
+    }
+
+    static void set_index_buffers()
+    {
+        utd::u32* quad_indices = new utd::u32[render_data::MAX_INDICES];
+
+        for (utd::u32 i = 0, offset = 0; i < render_data::MAX_INDICES; i += 6, offset += 4)
+        {
+            quad_indices[i + 0] = offset + 0;
+            quad_indices[i + 1] = offset + 1;
+            quad_indices[i + 2] = offset + 2;
+
+            quad_indices[i + 3] = offset + 2;
+            quad_indices[i + 4] = offset + 3;
+            quad_indices[i + 5] = offset + 0;
+        }
+
+        render_data::quad_vertex_array->make_index_buffer(quad_indices, render_data::MAX_INDICES);
+        render_data::circle_vertex_array->make_index_buffer(quad_indices, render_data::MAX_INDICES);
+
+        delete[] quad_indices;
+    }
+    
+    static void start_batch() noexcept
+    {
+
+        render_data::quad_vertex_data_iter = render_data::quad_vertex_data_base;
+        render_data::circle_vertex_buffer_iter = render_data::circle_vertex_buffer_base;
+        render_data::texture_slot_index = 1;
+    }
+    
+    static void restart_batch() noexcept
+    {
+        UTD_PROFILE_FUNC();
+
+        flush();
+        start_batch();
+    }
+    
+    static void bind_textures(const utd::ref_ptr<utd::shader> program) noexcept
+    {
+        program->bind();
+        for (utd::u32 i = 0; i < render_data::texture_slot_index; i++)
+        {
+            render_data::texture_slots[i]->bind(i);
+        }
+    }
+    
+    static void flush() noexcept
+    {
+        UTD_PROFILE_FUNC();
+        using namespace utd;
+        
+        size_t quad_vertex_data_offset = std::distance(render_data::quad_vertex_data_base, render_data::quad_vertex_data_iter);
+        if(quad_vertex_data_offset)
+        {
+            auto size = quad_vertex_data_offset * sizeof(vertex_primitive::quad);
+            
+            render_data::quad_vertex_buffer->set_data(render_data::quad_vertex_data_base, static_cast<u32>(size));
+
+            bind_textures(render_data::quad_shader);
+
+            renderer::command::draw_indexed(render_data::quad_vertex_array, static_cast<u32>(quad_vertex_data_offset * render_data::QUAD_INDICES));
+            s_stats.draw_calls++;
+        }
+        
+        size_t circle_vertex_buffer_offset = std::distance(render_data::circle_vertex_buffer_base, render_data::circle_vertex_buffer_iter);
+        if (circle_vertex_buffer_offset)
+        {
+            auto size = circle_vertex_buffer_offset * sizeof(vertex_primitive::circle);
+            render_data::circle_vertex_buffer->set_data(render_data::circle_vertex_buffer_base, static_cast<u32>(size));
+
+            bind_textures(render_data::circle_shader);
+
+            render_data::circle_shader->bind();
+            renderer::command::draw_indexed(render_data::circle_vertex_array, static_cast<u32>(circle_vertex_buffer_offset * render_data::QUAD_INDICES));
+            s_stats.draw_calls++;
+        }
+    }
+
+    static float get_texture_slot(utd::ref_ptr<utd::texture> texture)
+    {
+        float index = 0.f;
+        
+        if(texture)
+        {
+            for(utd::u32 i = 1u; i < render_data::texture_slot_index; i++)
+            {
+                if(render_data::texture_slots[i].get() == texture.get())
+                {
+                    index = static_cast<float>(i);
+                    break;
+                }
+            }
+
+            if(index == 0.f)
+            {
+                if (render_data::texture_slot_index == render_data::MAX_TEXTURE_UNITS)
+                {
+                    restart_batch();
+                }
+                else
+                {
+                    index = static_cast<float>(render_data::texture_slot_index);
+                    render_data::texture_slots[render_data::texture_slot_index] = texture;
+                    render_data::texture_slot_index++;
+                }
+
+            }
+            
+        }
+
+        return index;
+    }
+
+}

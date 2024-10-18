@@ -13,9 +13,9 @@
 #include <Engine/Core/Input.h>
 
 #include <Engine/Events/application_event.h>
-#include <Engine/Core/System/clock.h>
+#include <Platform/Common/System/clock.h>
 
-#include <Engine/Graphics/Renderer.h>
+#include <Engine/Graphics/renderer.h>
 #include <Engine/Graphics/Shader.h>
 #include <Engine/Graphics/Texture.h>
 
@@ -25,23 +25,21 @@
 #include <Engine/Graphics/vertex_attrib.h>
 
 #include <Engine/Profiling/Profile.h>
-
+    
 utd::application::application(const cmdline_args &)
     : m_running(true)
 { 
-    UTD_ENGINE_ASSERT(!application::exists(), "Application already exists");
+    UTD_ASSERT(!application::exists(), "Application already exists");
     singleton::init(this);
 
     m_window = window::create(1280, 720, "Untile");
     m_window->callback([this](event& e){ on_event(e); });
     
-    UTD_ENGINE_ASSERT(m_window, "window is null");
+    UTD_ASSERT(m_window, "native window handle is null");
     
     renderer::init();
     
     push_overlay(new imgui_layer());
-    push_overlay(new demo());
-
 }
 
 void utd::application::push_layer(layer *layer)
@@ -74,17 +72,17 @@ void utd::application::run()
     m_window->vsync(false);
 
     utd::clock clock;
+    renderer::command::clear_color(glm::vec4{ 0.2f, 0.3f, 0.3f, 1.0f });
     while (m_running)
     {
         auto dt = clock.restart().sec();
 
-        renderer::set_clear_color(glm::vec4{ 0.2f, 0.3f, 0.3f, 1.0f });
-        renderer::clear();
+        renderer::command::clear();
 
         UTD_PROFILE_BEGIN("Layer Drawing time", tracy::Color::Orange);
         
         m_imgui_layer->begin();
-        for(auto* layer : m_layer_stack)
+        for(auto layer : m_layer_stack)
         {
             layer->on_update(dt);
             layer->on_render();
@@ -101,14 +99,12 @@ void utd::application::run()
     }
 }
 
-
-
-bool utd::application::close(utd::event &event)
+bool utd::application::on_close(event&)
 {
     return !(m_running = false);
 }
 
-bool utd::application::window_resize(window_resize_event& event)
+bool utd::application::on_window_resize(window_resize_event& event)
 {
     glViewport(0, 0, event.width(), event.height());
     return true;
@@ -116,17 +112,23 @@ bool utd::application::window_resize(window_resize_event& event)
 
 void utd::application::on_event(event& event)
 {
-    event_dispatcher::dispatch<window_close_event>(event, UTD_BIND_EVENT(application::close));
-    event_dispatcher::dispatch<window_resize_event>(event, UTD_BIND_EVENT(application::window_resize));
+    event_dispatcher::dispatch<window_close_event>(event, UTD_BIND_EVENT(application::on_close));
+    event_dispatcher::dispatch<window_resize_event>(event, UTD_BIND_EVENT(application::on_window_resize));
 
     for (auto* layer : m_layer_stack)
     {
         layer->on_event(event);
     }
-
-    UTD_ENGINE_INFO(event.str());
+    
+    UTD_TRACE_IF(false, event.str());
 }
 
+void utd::application::close()
+{
+    m_running = false;
+}
+
+// TODO: REMOVE THESE
 void utd::triangle()
 {
     constexpr unsigned int SCR_WIDTH = 800;
@@ -291,17 +293,3 @@ void utd::triangle()
         // ------------------------------------------------------------------
         glfwTerminate();
 }
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-
-
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
-//void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-//{
-//    fov -= (float)yoffset;
-//    if (fov < 1.0f)
-//        fov = 1.0f;
-//    if (fov > 45.0f)
-//        fov = 45.0f;
-//}

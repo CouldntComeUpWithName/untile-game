@@ -40,11 +40,6 @@ namespace utd
             return *this;
         }
 
-        //index_buffer(std::vector<u32>&& indices)
-        //{
-        //    _init(indices.data(), indices.size());
-        //}
-
         index_buffer(const std::initializer_list<u32>& indices);
 
         ~index_buffer();

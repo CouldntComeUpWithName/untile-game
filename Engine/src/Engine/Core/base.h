@@ -3,8 +3,10 @@
 #include <vector>
 #include <array>
 #include <utility>
+#include <cstdint>
 
 #include <Engine/Utils/object_traits.h>
+#include <Engine/Core/fwd.h>
 
 #define BIT(offset) (1 << offset)
 #define STR(str) #str
@@ -12,7 +14,7 @@
 #define UTD_BIND_EVENT(fn) [this](auto&&... args) -> decltype(auto) {return this->fn(std::forward<decltype(args)>(args)...);}
 
 #if UTD_CONFIG_DEBUG
-	#if defined(WIN32) || defined(WIN64)
+	#if UTD_WINDOWS
 		#define UTD_DEBUGBREAK() __debugbreak()
 	#else
 		#define UTD_DEBUGBREAK() std::terminate()
@@ -23,28 +25,22 @@
 
 namespace utd
 {
-	using u64  = unsigned long long int;
-	using i64  = long long int;
-	using u32  = unsigned int;
-	using i32  = int;
-	using u16  = unsigned short int;
-	using i16  = short int;
-	using u8   = unsigned char;
-	using i8   = char;
-	using f128 = long double;
+	using u64  = uint64_t;
+	using i64  = int64_t;
+	using u32  = uint32_t;
+	using i32  = int32_t;
+	using u16  = uint16_t;
+	using i16  = int16_t;
+	using u8   = uint8_t;
+	using i8   = int8_t;
+	using f64 = double;
 	
-	using byte  = i8;
-	using ubyte = u8;
+	using byte  = u8;
+	using ibyte = char;
 	using word  = u16;
 	using dword = u32;
-	
+
 	using cstring = const char*;
-
-	template<typename T>
-	using d_buffer = std::vector<T>;
-
-	template<typename T, typename std::size_t SIZE>
-	using buffer = std::array<T, SIZE>;
 
 } /* namespace utd */
 
@@ -60,3 +56,13 @@ namespace std
 	using wptr = weak_ptr<T>;
 
 } /* namespace std */
+namespace utd
+{
+	template<typename T>
+	constexpr bool is_pow_of_two(T value)
+	{
+		static_assert(std::is_integral_v<T>, "T must be of an integral type");
+
+		return (value && (value & value - 1) == 0);
+	}
+}

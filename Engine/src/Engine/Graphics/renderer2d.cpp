@@ -329,6 +329,12 @@ static utd::cstring glsl_circle_fragment
 
 namespace detail
 {
+    static void init_quad();
+
+    static void init_circle();
+
+    static void set_index_buffers();
+
     static void start_batch() noexcept;
     
     static void restart_batch() noexcept;
@@ -341,116 +347,12 @@ namespace detail
 
 }
 
-
-static void _init_quad()
-{
-    UTD_PROFILE_FUNC();
-
-    render_data::quad_vertex_array = std::make_unique<utd::vertex_array>();
-    /*
-    
-        layout (location = 0) in vec3 a_Position;
-    layout (location = 1) in vec3 a_Rotation;
-    layout (location = 2) in vec3 a_Scale;
-    layout (location = 3) in vec3 a_VertexPosition;
-    layout (location = 4) in vec4 a_Color;
-    layout (location = 5) in vec2 a_TexCoord;
-    layout(location = 6) in float a_TexIndex;
-    layout(location = 7) in float a_TilingFactor;
-    
-    */
-    auto vertex_buffer = utd::vertex_buffer::create<vertex_primitive::quad>(render_data::MAX_VERTICES);
-    vertex_buffer->set_layout
-    (
-        {
-            { utd::shader::datatype::FLOAT3, "a_Position"     },
-            { utd::shader::datatype::FLOAT3, "a_Rotation"     },
-            { utd::shader::datatype::FLOAT3, "a_Scale"     },
-            { utd::shader::datatype::INT, "a_VertexPosition" },
-            { utd::shader::datatype::FLOAT4, "a_Color"        },
-            { utd::shader::datatype::FLOAT2, "a_TexCoord"     },
-            { utd::shader::datatype::FLOAT,  "a_TexIndex"     },
-            { utd::shader::datatype::FLOAT,  "a_TilingFactor" },
-        }
-    );
-    render_data::quad_vertex_buffer = vertex_buffer;
-    render_data::quad_vertex_array->push_back(std::move(vertex_buffer));
-
-    render_data::quad_vertex_data_base = new vertex_primitive::quad[render_data::MAX_VERTICES];
-
-    for (utd::u32 i = 0; i < render_data::MAX_VERTICES; i++)
-    {
-        auto index = i % render_data::QUAD_VERTICES;
-        render_data::quad_vertex_data_base[i].vertex_position_index = index;
-    }
-
-    render_data::quad_shader = utd::shader::create(glsl_quad_vertex, glsl_quad_fragment);
-
-    render_data::default_texture = utd::texture::create();
-    utd::u32 white_texture = 0xffffffff;
-    render_data::default_texture->set_data(&white_texture, sizeof(utd::u32));
-    render_data::texture_slots[0] = render_data::default_texture;
-}
-
-static void _init_circle()
-{
-    render_data::circle_vertex_array = std::make_unique<utd::vertex_array>();
-    auto vertex_buffer = utd::vertex_buffer::create<vertex_primitive::circle>(render_data::MAX_VERTICES);
-    //vertex->layout<vec4, vec4, vec3, vec2, float, float>("color", "outline_color", "position", "tex_coord", "tiling", "")
-    vertex_buffer->set_layout
-    (
-        {
-            { utd::shader::datatype::FLOAT3, "a_WorldPosition" },
-            { utd::shader::datatype::FLOAT3, "a_LocalPosition" },
-            { utd::shader::datatype::FLOAT4,         "a_Color" },
-            { utd::shader::datatype::FLOAT4,  "a_OutlineColor" },
-            { utd::shader::datatype::FLOAT2,       "aTexCoord" },
-            { utd::shader::datatype::FLOAT,       "a_TexIndex" },
-            { utd::shader::datatype::FLOAT,   "a_TilingFactor" },
-            { utd::shader::datatype::FLOAT,      "a_Thickness" },
-            { utd::shader::datatype::FLOAT,           "a_Fade" }
-        }
-    );
-    render_data::circle_vertex_buffer = vertex_buffer;
-    render_data::circle_vertex_array->push_back(std::move(vertex_buffer));
-    render_data::circle_vertex_buffer_base = new vertex_primitive::circle[render_data::MAX_VERTICES];
-    
-    for (utd::u32 i = 0; i < render_data::MAX_VERTICES; i++)
-    {
-        auto index = i % render_data::QUAD_VERTICES;
-        render_data::circle_vertex_buffer_base[i].tex_coord = render_data::TEXTURE_COORDS[index];
-    }
-    
-    render_data::circle_shader = utd::shader::create(glsl_circle_vertex, glsl_circle_fragment);
-}
-
-static void _set_index_buffers()
-{
-    utd::u32* quad_indices = new utd::u32[render_data::MAX_INDICES];
-
-    for (utd::u32 i = 0, offset = 0; i < render_data::MAX_INDICES; i += 6, offset += 4)
-    {
-        quad_indices[i + 0] = offset + 0;
-        quad_indices[i + 1] = offset + 1;
-        quad_indices[i + 2] = offset + 2;
-
-        quad_indices[i + 3] = offset + 2;
-        quad_indices[i + 4] = offset + 3;
-        quad_indices[i + 5] = offset + 0;
-    }
-
-    render_data::quad_vertex_array->make_index_buffer(quad_indices, render_data::MAX_INDICES);
-    render_data::circle_vertex_array->make_index_buffer(quad_indices, render_data::MAX_INDICES);
-
-    delete[] quad_indices;
-}
-
 void utd::renderer2d::init()
 {
-    _init_quad();
-    _init_circle();
-    
-    _set_index_buffers();
+    detail::init_quad();
+    detail::init_circle();
+
+    detail::set_index_buffers();
 
     render_data::uniform_camera_buffer = std::make_unique<uniform_buffer>(static_cast<u32>(sizeof(glm::mat4)), 0u);
 }
@@ -476,6 +378,8 @@ void utd::renderer2d::begin(const multi_camera &camera, const glm::mat4 &transfo
 
 void utd::renderer2d::begin(const editor_camera& editor_camera)
 {
+    s_stats = statistics{};
+    
     render_data::camera_projection_data = editor_camera.view_projection();
     render_data::uniform_camera_buffer->set_data(&render_data::camera_projection_data, sizeof(render_data::camera_projection_data));
     
@@ -493,10 +397,11 @@ void utd::renderer2d::draw(const transform& transform, const circle& circle)
 
     float index = detail::get_texture_slot(circle.texture);
 
-    for (u32 i = 0; i < 4; i++)
+    auto transform_matrix = transform::get(transform);
+    for (u32 i = 0; i < render_data::QUAD_VERTICES; i++)
     {
         UTD_PROFILE_SCOPE("Circle Vertex Data copying");
-        render_data::circle_vertex_buffer_iter->position = transform::get(transform) * render_data::QUAD_VERTEX_POSITIONS[i];
+        render_data::circle_vertex_buffer_iter->position = transform_matrix * render_data::QUAD_VERTEX_POSITIONS[i];
         render_data::circle_vertex_buffer_iter->local_position = render_data::QUAD_VERTEX_POSITIONS[i] * 2.f;
         render_data::circle_vertex_buffer_iter->color = circle.color;
         render_data::circle_vertex_buffer_iter->outline_color = circle.outline_color;
@@ -517,12 +422,10 @@ void utd::renderer2d::draw(const transform &transform, const sprite &sprite)
     UTD_PROFILE_FUNC();
 
     auto index = detail::get_texture_slot(sprite.texture);
-    if (s_stats.quad_drawn_count >= render_data::MAX_QUADS)
-    {
-        detail::restart_batch();
-    }
-    UTD_PROFILE_BEGIN("renderer2d - setting sprite vertex data"); // TODO: fix the bottleneck
+
+   
     
+    UTD_PROFILE_BEGIN("renderer2d - setting sprite vertex data"); // TODO: fix the bottleneck
     for (u32 i = 0; i < render_data::QUAD_VERTICES; i++)
     {
         render_data::quad_vertex_data_iter->transform = transform;
@@ -534,6 +437,12 @@ void utd::renderer2d::draw(const transform &transform, const sprite &sprite)
         render_data::quad_vertex_data_iter++;
     }
     UTD_PROFILE_END("renderer2d - sprite copying vertex data");
+   
+   auto count = std::distance(render_data::quad_vertex_data_base, render_data::quad_vertex_data_iter);
+   if (count == render_data::MAX_QUADS * render_data::QUAD_VERTICES)
+   {
+       detail::restart_batch();
+   }
 
     s_stats.quad_drawn_count++;
 
@@ -606,9 +515,102 @@ const utd::renderer2d::statistics& utd::renderer2d::stats()
 
 namespace detail
 {
+
+    static void init_quad()
+    {
+        UTD_PROFILE_FUNC();
+
+        render_data::quad_vertex_array = std::make_unique<utd::vertex_array>();
+
+        auto vertex_buffer = utd::vertex_buffer::create<vertex_primitive::quad>(render_data::MAX_VERTICES);
+        vertex_buffer->set_layout
+        (
+            {
+                { utd::shader::datatype::FLOAT3, "a_Position"     },
+                { utd::shader::datatype::FLOAT3, "a_Rotation"     },
+                { utd::shader::datatype::FLOAT3, "a_Scale"     },
+                { utd::shader::datatype::INT, "a_VertexPosition" },
+                { utd::shader::datatype::FLOAT4, "a_Color"        },
+                { utd::shader::datatype::FLOAT2, "a_TexCoord"     },
+                { utd::shader::datatype::FLOAT,  "a_TexIndex"     },
+                { utd::shader::datatype::FLOAT,  "a_TilingFactor" },
+            }
+        );
+        render_data::quad_vertex_buffer = vertex_buffer;
+        render_data::quad_vertex_array->push_back(std::move(vertex_buffer));
+
+        render_data::quad_vertex_data_base = new vertex_primitive::quad[render_data::MAX_VERTICES];
+
+        for (utd::u32 i = 0; i < render_data::MAX_VERTICES; i++)
+        {
+            auto index = i % render_data::QUAD_VERTICES;
+            render_data::quad_vertex_data_base[i].vertex_position_index = index;
+        }
+
+        render_data::quad_shader = utd::shader::create(glsl_quad_vertex, glsl_quad_fragment);
+
+        render_data::default_texture = utd::texture::create();
+        utd::u32 white_texture = 0xffffffff;
+        render_data::default_texture->set_data(&white_texture, sizeof(utd::u32));
+        render_data::texture_slots[0] = render_data::default_texture;
+    }
+
+    static void init_circle()
+    { 
+        render_data::circle_vertex_array = std::make_unique<utd::vertex_array>();
+        auto vertex_buffer = utd::vertex_buffer::create<vertex_primitive::circle>(render_data::MAX_VERTICES);
+        
+        vertex_buffer->set_layout
+        (
+            {
+                { utd::shader::datatype::FLOAT3, "a_WorldPosition" },
+                { utd::shader::datatype::FLOAT3, "a_LocalPosition" },
+                { utd::shader::datatype::FLOAT4,         "a_Color" },
+                { utd::shader::datatype::FLOAT4,  "a_OutlineColor" },
+                { utd::shader::datatype::FLOAT2,       "aTexCoord" },
+                { utd::shader::datatype::FLOAT,       "a_TexIndex" },
+                { utd::shader::datatype::FLOAT,   "a_TilingFactor" },
+                { utd::shader::datatype::FLOAT,      "a_Thickness" },
+                { utd::shader::datatype::FLOAT,           "a_Fade" }
+            }
+        );
+        
+        render_data::circle_vertex_buffer = vertex_buffer;
+        render_data::circle_vertex_array->push_back(std::move(vertex_buffer));
+        render_data::circle_vertex_buffer_base = new vertex_primitive::circle[render_data::MAX_VERTICES];
+        
+        for (utd::u32 i = 0; i < render_data::MAX_VERTICES; i++)
+        {
+            auto index = i % render_data::QUAD_VERTICES;
+            render_data::circle_vertex_buffer_base[i].tex_coord = render_data::TEXTURE_COORDS[index];
+        }
+        
+        render_data::circle_shader = utd::shader::create(glsl_circle_vertex, glsl_circle_fragment);
+    }
+
+    static void set_index_buffers()
+    {
+        utd::u32* quad_indices = new utd::u32[render_data::MAX_INDICES];
+
+        for (utd::u32 i = 0, offset = 0; i < render_data::MAX_INDICES; i += 6, offset += 4)
+        {
+            quad_indices[i + 0] = offset + 0;
+            quad_indices[i + 1] = offset + 1;
+            quad_indices[i + 2] = offset + 2;
+
+            quad_indices[i + 3] = offset + 2;
+            quad_indices[i + 4] = offset + 3;
+            quad_indices[i + 5] = offset + 0;
+        }
+
+        render_data::quad_vertex_array->make_index_buffer(quad_indices, render_data::MAX_INDICES);
+        render_data::circle_vertex_array->make_index_buffer(quad_indices, render_data::MAX_INDICES);
+
+        delete[] quad_indices;
+    }
+    
     static void start_batch() noexcept
     {
-        s_stats.quad_drawn_count = 0; s_stats.draw_calls = 0;
 
         render_data::quad_vertex_data_iter = render_data::quad_vertex_data_base;
         render_data::circle_vertex_buffer_iter = render_data::circle_vertex_buffer_base;

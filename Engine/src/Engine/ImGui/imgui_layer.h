@@ -10,10 +10,7 @@
 #include <Engine/Graphics/shader.h>
 #include <Engine/Graphics/vertex_array.h>
 
-namespace 
-{
-    constexpr inline auto UTD_IMGUI_ENABLE = 0;
-}
+constexpr inline auto UTD_IMGUI_ENABLE = 1;
 
 #define UTD_IMGUI_SCOPE() if constexpr(UTD_IMGUI_ENABLE)
     

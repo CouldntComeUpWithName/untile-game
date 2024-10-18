@@ -10,7 +10,7 @@ void utd::scene::build_scene()
     m_texture_manager.fetch("sand", "E:/Programming/untile/Sandbox/assets/textures/sand_3.png");
     m_texture_manager.fetch("grass", "E:/Programming/untile/Sandbox/assets/textures/grass_2.png");
     m_texture_manager.fetch("cobblestone", "E:/Programming/untile/Sandbox/assets/textures/cobblestone_1.png");
-    m_texture_manager.fetch("red sand", "C:/Users/Star Maker/Downloads/red-sand-ground-2048x2048.png");
+    m_texture_manager.fetch("red sand", "C:/Users/Star Maker/Downloads/red-sand-ground-256x256.png");
     
     //m_player = create_entity("player");
 
